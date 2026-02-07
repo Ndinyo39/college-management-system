@@ -1,0 +1,11 @@
+﻿--- USERS TABLE ---
+[
+  {
+    id: 1,
+    email: 'admin@beautex.edu',
+    password: '$2a$10$LCvyJlH2SBv8/ew3PgxNT.6GUjlBsQklZNyqwfeO7jFzOlMm5Wb.O',
+    role: 'admin'
+  }
+]
+Password verification for admin123: true
+Hash in DB: $2a$10$LCvyJlH2SBv8/ew3PgxNT.6GUjlBsQklZNyqwfeO7jFzOlMm5Wb.O

@@ -57,9 +57,14 @@ export async function login(req, res) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
+        // Check if account is active
+        if (user.status === 'Inactive') {
+            return res.status(403).json({ error: 'Account restricted. Contact superadmin.' });
+        }
+
         // Generate JWT
         const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role },
+            { id: user.id, email: user.email, role: user.role, status: user.status },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
@@ -69,7 +74,8 @@ export async function login(req, res) {
             user: {
                 id: user.id,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                status: user.status
             }
         });
     } catch (error) {
@@ -80,7 +86,7 @@ export async function login(req, res) {
 
 export async function getMe(req, res) {
     try {
-        const user = await queryOne('SELECT id, email, role, created_at FROM users WHERE id = ?', [req.user.id]);
+        const user = await queryOne('SELECT id, email, role, status, created_at FROM users WHERE id = ?', [req.user.id]);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }

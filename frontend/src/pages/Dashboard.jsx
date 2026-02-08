@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Users, BookOpen, UserCheck, TrendingUp, Zap, UserPlus, FileText, DollarSign, GraduationCap } from 'lucide-react';
-import { studentsAPI, coursesAPI, facultyAPI } from '../services/api';
+import { studentsAPI, coursesAPI, facultyAPI, reportsAPI } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -17,18 +17,21 @@ function AdminDashboard() {
     });
     const [students, setStudents] = useState([]);
     const [courses, setCourses] = useState([]);
+    const [recentReports, setRecentReports] = useState([]);
 
     useEffect(() => { fetchData(); }, []);
 
     const fetchData = async () => {
         try {
-            const [studentsRes, coursesRes, facultyRes] = await Promise.all([
+            const [studentsRes, coursesRes, facultyRes, reportsRes] = await Promise.all([
                 studentsAPI.getAll(),
                 coursesAPI.getAll(),
-                facultyAPI.getAll()
+                facultyAPI.getAll(),
+                reportsAPI.getAll({ limit: 5 })
             ]);
             setStudents(studentsRes.data);
             setCourses(coursesRes.data);
+            setRecentReports(reportsRes.data.slice(0, 5));
             setStats({
                 students: studentsRes.data.length,
                 courses: coursesRes.data.length,
@@ -142,6 +145,32 @@ function AdminDashboard() {
                         <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest mb-2">Staff Management</h3>
                         <p className="text-xs text-gray-400 mb-6 font-medium">Manage faculty and administrative staff</p>
                         <button onClick={() => navigate('/faculty')} className="text-[10px] font-black uppercase tracking-widest text-maroon border-b-2 border-gold pb-1 hover:text-gold transition-colors">View Staff →</button>
+                    </div>
+
+                    <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm group">
+                        <div className="flex items-center gap-2 mb-6">
+                            <FileText className="w-4 h-4 text-maroon" />
+                            <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Recent Reports</h3>
+                        </div>
+                        <div className="space-y-4">
+                            {recentReports.length > 0 ? recentReports.map((report) => (
+                                <div key={report.id} className="flex justify-between items-center bg-gray-50/50 p-3 rounded-xl hover:bg-white hover:shadow-sm transition-all border border-transparent hover:border-maroon/10">
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-800">{report.student_name}</p>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{report.reporting_period}</p>
+                                    </div>
+                                    <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${report.recommendation === 'Proceed' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                        }`}>
+                                        {report.recommendation}
+                                    </span>
+                                </div>
+                            )) : (
+                                <p className="text-xs text-gray-400 italic py-4">No recent academic submissions.</p>
+                            )}
+                        </div>
+                        <button onClick={() => navigate('/reports')} className="w-full mt-6 py-3 rounded-xl border border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-maroon hover:border-maroon transition-all">
+                            Full Repository →
+                        </button>
                     </div>
                 </div>
             </div>

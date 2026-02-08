@@ -5,27 +5,26 @@
 @tailwind utilities;
 
 :root {
-    --primary: #5D001E;
-    /* Muted Deep Burgundy */
-    --primary-dark: #3E0014;
-    --accent: #C5A059;
-    /* Brushed Brass (Muted Gold) */
-    --accent-dark: #9A7B3F;
-    --bg-parchment: #F5F2F0;
-    /* Softer Gray-Parchment */
-    --text-main: #2C2C2C;
+    --primary: #800000;
+    /* Classic Maroon */
+    --primary-dark: #600000;
+    --accent: #FFD700;
+    /* Classic Gold */
+    --accent-dark: #E6C200;
+    --bg-parchment: #FDFBFA;
+    /* Very Light Ivory */
+    --text-main: #1A1A1A;
     --card-bg: #ffffff;
 }
 
 .dark {
-    --primary: #C5A059;
-    --primary-dark: #9A7B3F;
-    --accent: #5D001E;
-    --accent-dark: #3E0014;
-    --bg-parchment: #0F0E0E;
-    /* Deeper, less vibrant dark bg */
-    --text-main: #E5E1DE;
-    --card-bg: #1A1818;
+    --primary: #FFD700;
+    --primary-dark: #E6C200;
+    --accent: #800000;
+    --accent-dark: #600000;
+    --bg-parchment: #0A0A0A;
+    --text-main: #F5F5F5;
+    --card-bg: #141414;
 }
 
 html,

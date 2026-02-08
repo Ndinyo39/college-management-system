@@ -20,11 +20,21 @@ async function checkUsers() {
     console.log(users);
 
     if (users.length > 0) {
-        const admin = users.find(u => u.email === 'admin@beautex.edu');
-        if (admin) {
-            const isValid = await bcrypt.compare('admin123', admin.password);
-            console.log('Password verification for admin123:', isValid);
-            console.log('Hash in DB:', admin.password);
+        const emailsToCheck = [
+            { email: 'admin@beautex.edu', pass: 'admin123' },
+            { email: 'superadmin@beautex.edu', pass: 'superadmin123' },
+            { email: 'james.wilson@beautex.edu', pass: 'password123' },
+            { email: 'sarah.johnson@beautex.edu', pass: 'password123' }
+        ];
+
+        for (const check of emailsToCheck) {
+            const user = users.find(u => u.email === check.email);
+            if (user) {
+                const isValid = await bcrypt.compare(check.pass, user.password);
+                console.log(`User: ${check.email} | Role: ${user.role} | Password Valid: ${isValid ? '✅' : '❌'}`);
+            } else {
+                console.log(`User: ${check.email} | ❌ Not Found`);
+            }
         }
     }
     await db.close();

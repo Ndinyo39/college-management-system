@@ -23,11 +23,11 @@ export async function getFaculty(req, res) {
 
 export async function createFaculty(req, res) {
     try {
-        const { id, name, email, department, courses, contact } = req.body;
+        const { id, name, email, department, courses, contact, passport } = req.body;
 
         const result = await run(
-            'INSERT INTO faculty (id, name, email, department, courses, contact) VALUES (?, ?, ?, ?, ?, ?)',
-            [id, name, email, department, JSON.stringify(courses), contact]
+            'INSERT INTO faculty (id, name, email, department, courses, contact, passport) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [id, name, email, department, JSON.stringify(courses), contact, passport || null]
         );
 
         const newFaculty = await queryOne('SELECT * FROM faculty WHERE id = ?', [id]);

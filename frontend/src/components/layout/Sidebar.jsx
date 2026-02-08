@@ -10,18 +10,24 @@ import {
     Calendar,
     Megaphone,
     Settings as SettingsIcon,
+    Shield,
+    FileText,
+    BarChart3,
 } from 'lucide-react';
 
 const navigation = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['admin', 'teacher', 'student'] },
-    { name: 'Students', path: '/students', icon: Users, roles: ['admin'] },
-    { name: 'Courses', path: '/courses', icon: BookOpen, roles: ['admin', 'teacher', 'student'] },
-    { name: 'Faculty', path: '/faculty', icon: UserCheck, roles: ['admin'] },
-    { name: 'Attendance', path: '/attendance', icon: ClipboardList, roles: ['admin', 'teacher', 'student'] },
-    { name: 'Grades', path: '/grades', icon: GraduationCap, roles: ['admin', 'teacher', 'student'] },
-    { name: 'Schedule', path: '/schedule', icon: Calendar, roles: ['admin', 'teacher', 'student'] },
-    { name: 'Announcements', path: '/announcements', icon: Megaphone, roles: ['admin', 'teacher', 'student'] },
-    { name: 'Settings', path: '/settings', icon: SettingsIcon, roles: ['admin'] },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['admin', 'teacher', 'student', 'superadmin'] },
+    { name: 'User Management', path: '/users', icon: Shield, roles: ['superadmin'] },
+    { name: 'Students', path: '/students', icon: Users, roles: ['admin', 'superadmin'] },
+    { name: 'Courses', path: '/courses', icon: BookOpen, roles: ['admin', 'teacher', 'student', 'superadmin'] },
+    { name: 'Faculty', path: '/faculty', icon: UserCheck, roles: ['admin', 'superadmin'] },
+    { name: 'Attendance', path: '/attendance', icon: ClipboardList, roles: ['admin', 'teacher', 'student', 'superadmin'] },
+    { name: 'Grades', path: '/grades', icon: GraduationCap, roles: ['admin', 'teacher', 'student', 'superadmin'] },
+    { name: 'Schedule', path: '/schedule', icon: Calendar, roles: ['admin', 'teacher', 'student', 'superadmin'] },
+    { name: 'Academic Reports', path: '/reports', icon: FileText, roles: ['admin', 'teacher', 'superadmin'] },
+    { name: 'Activity Reports', path: '/activity-reports', icon: BarChart3, roles: ['admin', 'superadmin'] },
+    { name: 'Announcements', path: '/announcements', icon: Megaphone, roles: ['admin', 'teacher', 'student', 'superadmin'] },
+    { name: 'Settings', path: '/settings', icon: SettingsIcon, roles: ['admin', 'superadmin'] },
 ];
 
 export default function Sidebar() {
@@ -33,13 +39,12 @@ export default function Sidebar() {
 
     return (
         <div className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-100 flex flex-col z-20">
-            {/* Minimal Logo Section */}
             <div className="px-6 py-6 border-b border-gray-50 mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-maroon rounded-lg flex items-center justify-center">
-                        <GraduationCap className="w-5 h-5 text-gold" />
+                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden shadow-sm border border-gray-100">
+                        <img src="/src/logo.jpg" alt="Beautex Logo" className="w-full h-full object-cover" />
                     </div>
-                    <span className="text-sm font-black text-maroon uppercase tracking-widest">BTC Navigation</span>
+                    <span className="text-sm font-black text-maroon uppercase tracking-widest">Beautex CMS</span>
                 </div>
             </div>
 

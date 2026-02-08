@@ -8,6 +8,11 @@ import * as attendanceController from '../controllers/attendanceController.js';
 import * as gradeController from '../controllers/gradeController.js';
 import * as announcementController from '../controllers/announcementController.js';
 import notificationController from '../controllers/notificationController.js';
+import * as sessionController from '../controllers/sessionController.js';
+import * as userController from '../controllers/userController.js';
+import * as reportController from '../controllers/reportController.js';
+import * as activityReportController from '../controllers/activityReportController.js';
+import { authorizeRoles } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -55,5 +60,48 @@ router.delete('/announcements/:id', authenticateToken, announcementController.de
 // Notification routes (protected)
 router.get('/notifications', authenticateToken, notificationController.getAll);
 router.put('/notifications/:id/read', authenticateToken, notificationController.markRead);
+
+// Session (Schedule) routes (protected)
+router.get('/sessions', authenticateToken, sessionController.getAllSessions);
+router.post('/sessions', authenticateToken, sessionController.createSession);
+router.delete('/sessions/:id', authenticateToken, sessionController.deleteSession);
+
+// User Management routes (Superadmin Only)
+router.get('/users', authenticateToken, authorizeRoles('superadmin'), userController.getAllUsers);
+router.put('/users/:id/role', authenticateToken, authorizeRoles('superadmin'), userController.updateUserRole);
+router.put('/users/:id/status', authenticateToken, authorizeRoles('superadmin'), userController.toggleUserStatus);
+router.put('/users/:id/password', authenticateToken, authorizeRoles('superadmin'), userController.resetUserPassword);
+router.delete('/users/:id', authenticateToken, authorizeRoles('superadmin'), userController.deleteUser);
+
+// Academic Reports (Trainers/Admin/Superadmin)
+router.get('/reports', authenticateToken, authorizeRoles('teacher', 'admin', 'superadmin'), reportController.getAllReports);
+router.get('/reports/student/:studentId', authenticateToken, authorizeRoles('teacher', 'admin', 'superadmin', 'student'), reportController.getStudentReports);
+router.post('/reports', authenticateToken, authorizeRoles('teacher', 'admin', 'superadmin'), reportController.createReport);
+router.delete('/reports/:id', authenticateToken, authorizeRoles('teacher', 'admin', 'superadmin'), reportController.deleteReport);
+
+// Activity Reports (Admin/Superadmin Only)
+// Daily Reports
+router.get('/activity-reports/daily', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.getAllDailyReports);
+router.get('/activity-reports/daily/:date', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.getDailyReport);
+router.post('/activity-reports/daily', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.createDailyReport);
+router.put('/activity-reports/daily/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.updateDailyReport);
+router.delete('/activity-reports/daily/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.deleteDailyReport);
+
+// Weekly Reports
+router.get('/activity-reports/weekly', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.getAllWeeklyReports);
+router.get('/activity-reports/weekly/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.getWeeklyReport);
+router.post('/activity-reports/weekly', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.createWeeklyReport);
+router.put('/activity-reports/weekly/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.updateWeeklyReport);
+router.delete('/activity-reports/weekly/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.deleteWeeklyReport);
+
+// Monthly Reports
+router.get('/activity-reports/monthly', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.getAllMonthlyReports);
+router.get('/activity-reports/monthly/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.getMonthlyReport);
+router.post('/activity-reports/monthly', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.createMonthlyReport);
+router.put('/activity-reports/monthly/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.updateMonthlyReport);
+router.delete('/activity-reports/monthly/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.deleteMonthlyReport);
+
+// Reports Summary
+router.get('/activity-reports/summary', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.getReportsSummary);
 
 export default router;

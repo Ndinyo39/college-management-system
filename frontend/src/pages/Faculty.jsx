@@ -10,7 +10,7 @@ export default function Faculty() {
     const [showProfile, setShowProfile] = useState(null);
     const [editingFaculty, setEditingFaculty] = useState(null);
     const [formData, setFormData] = useState({
-        name: '', email: '', department: '', position: '', specialization: '', contact: ''
+        name: '', email: '', department: '', position: '', specialization: '', contact: '', passport: ''
     });
     const [printingFaculty, setPrintingFaculty] = useState(null);
 
@@ -73,14 +73,17 @@ export default function Faculty() {
             department: member.department,
             position: member.position,
             specialization: member.specialization || '',
-            contact: member.contact || ''
+            position: member.position,
+            specialization: member.specialization || '',
+            contact: member.contact || '',
+            passport: member.passport || ''
         });
         setShowModal(true);
     };
 
     const resetForm = () => {
         setFormData({
-            name: '', email: '', department: '', position: '', specialization: '', contact: ''
+            name: '', email: '', department: '', position: '', specialization: '', contact: '', passport: ''
         });
     };
 
@@ -255,6 +258,13 @@ export default function Faculty() {
                                 onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
                                 className="w-full px-4 py-3 border border-maroon-700/50 rounded-lg bg-maroon-900/50 text-white placeholder-gold-500/30 focus:ring-2 focus:ring-gold-500 outline-none"
                             />
+                            <input
+                                type="text"
+                                placeholder="Passport Number"
+                                value={formData.passport}
+                                onChange={(e) => setFormData({ ...formData, passport: e.target.value })}
+                                className="w-full px-4 py-3 border border-maroon-700/50 rounded-lg bg-maroon-900/50 text-white placeholder-gold-500/30 focus:ring-2 focus:ring-gold-500 outline-none"
+                            />
                             <button type="submit" className="w-full bg-gold-500 text-maroon-900 py-3 rounded-lg font-bold hover:bg-gold-400 transition-all shadow-lg mt-4">
                                 {editingFaculty ? 'Update' : 'Add'} Faculty
                             </button>
@@ -299,6 +309,10 @@ export default function Faculty() {
                             <div className="space-y-2">
                                 <p className="text-[10px] font-black text-maroon/30 uppercase tracking-widest">Contact Information</p>
                                 <p className="text-lg font-black text-maroon uppercase">{showProfile.contact || 'Not Listed'}</p>
+                            </div>
+                            <div className="space-y-2">
+                                <p className="text-[10px] font-black text-maroon/30 uppercase tracking-widest">Passport Number</p>
+                                <p className="text-lg font-black text-maroon uppercase">{showProfile.passport || 'N/A'}</p>
                             </div>
                             <div className="space-y-2">
                                 <p className="text-[10px] font-black text-maroon/30 uppercase tracking-widest">Employment Status</p>

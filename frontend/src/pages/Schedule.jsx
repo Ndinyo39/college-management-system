@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Calendar as CalendarIcon, Clock, MapPin, Plus, X } from 'lucide-react';
+import { sessionsAPI } from '../services/api';
+import { Calendar as CalendarIcon, Clock, MapPin, Plus, X, Trash2 } from 'lucide-react';
 
 export default function Schedule() {
     const { user } = useAuth();
@@ -8,43 +9,67 @@ export default function Schedule() {
     const hours = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
-    const allClasses = [
-        { day: 'Monday', time: '08:00', course: 'Cosmetology', room: 'Room 101', instructor: 'Joan Doe', teacher_email: 'james.wilson@beautex.edu' },
-        { day: 'Monday', time: '11:00', course: 'Beauty Therapy', room: 'Lab A', instructor: 'Dr. Smith', teacher_email: 'staff@beautex.edu' },
-        { day: 'Tuesday', time: '09:00', course: 'Catering', room: 'Kitchen 1', instructor: 'Chef Pierre', teacher_email: 'staff@beautex.edu' },
-        { day: 'Wednesday', time: '14:00', course: 'Cyber Security', room: 'IT Lab 2', instructor: 'Prof. Alice', teacher_email: 'staff@beautex.edu' },
-        { day: 'Thursday', time: '10:00', course: 'Website Development', room: 'IT Lab 1', instructor: 'Mark John', teacher_email: 'staff@beautex.edu' },
-        { day: 'Friday', time: '08:00', course: 'Cosmetology', room: 'Room 101', instructor: 'Joan Doe', teacher_email: 'james.wilson@beautex.edu' },
-    ];
-
     const [filteredClasses, setFilteredClasses] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({
         day: 'Monday', time: '08:00', course: '', room: '', instructor: ''
     });
 
-    useEffect(() => {
-        if (user?.role === 'admin') {
-            setFilteredClasses(allClasses);
-        } else if (user?.role === 'teacher') {
-            setFilteredClasses(allClasses.filter(c => c.teacher_email === user.email));
-        } else if (user?.role === 'student') {
-            setFilteredClasses(allClasses.filter(c => c.course === 'Cosmetology'));
+    const fetchSessions = async () => {
+        try {
+            setLoading(true);
+            const response = await sessionsAPI.getAll();
+            let allData = response.data;
+
+            if (user?.role === 'teacher') {
+                setFilteredClasses(allData.filter(c => c.teacher_email === user.email));
+            } else if (user?.role === 'student') {
+                // Students see all for demo, or filter by their specific course
+                setFilteredClasses(allData.filter(c => c.course === 'Cosmetology'));
+            } else {
+                setFilteredClasses(allData);
+            }
+        } catch (error) {
+            console.error('Error fetching schedule:', error);
+        } finally {
+            setLoading(false);
         }
+    };
+
+    useEffect(() => {
+        fetchSessions();
     }, [user]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const newSession = {
-            ...formData,
-            teacher_email: 'staff@beautex.edu' // Mock email
-        };
-        setFilteredClasses([...filteredClasses, newSession]);
-        setShowModal(false);
-        alert('New session added to the schedule registry locally.');
+        try {
+            await sessionsAPI.create({
+                ...formData,
+                teacher_email: user?.role === 'teacher' ? user.email : 'staff@beautex.edu'
+            });
+            setShowModal(false);
+            setFormData({ day: 'Monday', time: '08:00', course: '', room: '', instructor: '' });
+            fetchSessions();
+        } catch (error) {
+            console.error('Error creating session:', error);
+            alert('Failed to provision session. Please check backend.');
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Delete this session?')) return;
+        try {
+            await sessionsAPI.delete(id);
+            fetchSessions();
+        } catch (error) {
+            console.error('Error deleting session:', error);
+        }
     };
 
     const getClass = (day, time) => filteredClasses.find(c => c.day === day && c.time === time);
+
+    if (loading) return <div className="text-white font-black p-10">SYNCHRONIZING REGISTRY...</div>;
 
     return (
         <div className="space-y-6 text-white">
@@ -100,7 +125,7 @@ export default function Schedule() {
                                         return (
                                             <td key={day} className="p-2 border border-white/5 min-w-[150px]">
                                                 {session && (
-                                                    <div className="bg-white/5 border-l-4 border-gold p-3 rounded-r-lg space-y-1 group hover:bg-white/10 transition-all cursor-pointer shadow-lg">
+                                                    <div className="bg-white/5 border-l-4 border-gold p-3 rounded-r-lg space-y-1 group hover:bg-white/10 transition-all cursor-pointer shadow-lg relative">
                                                         <p className="text-[10px] font-black text-white tracking-widest uppercase truncate">
                                                             {session.course}
                                                         </p>
@@ -110,6 +135,14 @@ export default function Schedule() {
                                                         <div className="flex items-center gap-1.5 text-[9px] text-gold/60 font-bold">
                                                             <Clock className="w-3 h-3 text-gold/40" /> {session.instructor}
                                                         </div>
+                                                        {user?.role === 'admin' && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}
+                                                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-all"
+                                                            >
+                                                                <Trash2 className="w-3 h-3" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
                                             </td>

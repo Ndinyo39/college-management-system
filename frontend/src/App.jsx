@@ -12,6 +12,9 @@ import Grades from './pages/Grades';
 import Schedule from './pages/Schedule';
 import Announcements from './pages/Announcements';
 import Settings from './pages/Settings';
+import Users from './pages/Users';
+import AcademicReports from './pages/AcademicReports';
+import ActivityReports from './pages/ActivityReports';
 
 function ProtectedRoute({ children, allowedRoles }) {
     const { user, loading } = useAuth();
@@ -38,16 +41,19 @@ function App() {
                         <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
 
                         {/* Admin Only Routes */}
-                        <Route path="/students" element={<ProtectedRoute allowedRoles={['admin']}><Layout><Students /></Layout></ProtectedRoute>} />
-                        <Route path="/faculty" element={<ProtectedRoute allowedRoles={['admin']}><Layout><Faculty /></Layout></ProtectedRoute>} />
+                        <Route path="/students" element={<ProtectedRoute allowedRoles={['admin', 'superadmin']}><Layout><Students /></Layout></ProtectedRoute>} />
+                        <Route path="/faculty" element={<ProtectedRoute allowedRoles={['admin', 'superadmin']}><Layout><Faculty /></Layout></ProtectedRoute>} />
 
                         {/* Shared Routes */}
-                        <Route path="/courses" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student']}><Layout><Courses /></Layout></ProtectedRoute>} />
-                        <Route path="/attendance" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student']}><Layout><Attendance /></Layout></ProtectedRoute>} />
-                        <Route path="/grades" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student']}><Layout><Grades /></Layout></ProtectedRoute>} />
-                        <Route path="/schedule" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student']}><Layout><Schedule /></Layout></ProtectedRoute>} />
-                        <Route path="/announcements" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student']}><Layout><Announcements /></Layout></ProtectedRoute>} />
-                        <Route path="/settings" element={<ProtectedRoute allowedRoles={['admin']}><Layout><Settings /></Layout></ProtectedRoute>} />
+                        <Route path="/courses" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student', 'superadmin']}><Layout><Courses /></Layout></ProtectedRoute>} />
+                        <Route path="/attendance" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student', 'superadmin']}><Layout><Attendance /></Layout></ProtectedRoute>} />
+                        <Route path="/grades" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student', 'superadmin']}><Layout><Grades /></Layout></ProtectedRoute>} />
+                        <Route path="/schedule" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student', 'superadmin']}><Layout><Schedule /></Layout></ProtectedRoute>} />
+                        <Route path="/announcements" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student', 'superadmin']}><Layout><Announcements /></Layout></ProtectedRoute>} />
+                        <Route path="/settings" element={<ProtectedRoute allowedRoles={['admin', 'superadmin']}><Layout><Settings /></Layout></ProtectedRoute>} />
+                        <Route path="/users" element={<ProtectedRoute allowedRoles={['superadmin']}><Layout><Users /></Layout></ProtectedRoute>} />
+                        <Route path="/reports" element={<ProtectedRoute allowedRoles={['teacher', 'admin', 'superadmin']}><Layout><AcademicReports /></Layout></ProtectedRoute>} />
+                        <Route path="/activity-reports" element={<ProtectedRoute allowedRoles={['admin', 'superadmin']}><Layout><ActivityReports /></Layout></ProtectedRoute>} />
 
                         <Route path="/" element={<Navigate to="/dashboard" />} />
                         <Route path="*" element={<Navigate to="/dashboard" />} />

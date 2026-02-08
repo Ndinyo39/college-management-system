@@ -9,15 +9,13 @@ export default {
         extend: {
             colors: {
                 maroon: {
-                    DEFAULT: 'var(--primary)',
-                    dark: 'var(--primary-dark)',
-                    // Keep shades for compatibility
+                    DEFAULT: '#800000',
+                    dark: '#600000',
                     900: '#800000',
                 },
                 gold: {
-                    DEFAULT: 'var(--accent)',
-                    dark: 'var(--accent-dark)',
-                    // Keep shades for compatibility
+                    DEFAULT: '#FFD700',
+                    dark: '#E6C200',
                     500: '#FFD700',
                 },
                 primary: 'var(--primary)',

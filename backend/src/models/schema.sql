@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   email TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
-  role TEXT NOT NULL CHECK(role IN ('admin', 'teacher', 'student')),
+  role TEXT NOT NULL CHECK(role IN ('superadmin', 'admin', 'teacher', 'student')),
+  status TEXT DEFAULT 'Active' CHECK(status IN ('Active', 'Inactive')),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -53,6 +54,7 @@ CREATE TABLE IF NOT EXISTS faculty (
   department TEXT NOT NULL,
   courses TEXT, -- JSON array of course names
   contact TEXT,
+  passport TEXT, -- Passport number for trainers
   status TEXT DEFAULT 'Active' CHECK(status IN ('Active', 'Inactive')),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -131,3 +133,179 @@ INSERT OR IGNORE INTO announcements (title, content, author, category, priority,
 ('Spring Semester Orientation', 'All new students must attend the orientation on February 15, 2026 at 9:00 AM.', 'Admin User', 'General', 'High', '2026-02-05'),
 ('Course Registration Deadline', 'Reminder: Course registration for the upcoming semester closes on February 20, 2026.', 'Admin User', 'Academic', 'Medium', '2026-02-06'),
 ('Library Hours Extended', 'The library will now be open until 10:00 PM on weekdays starting next week.', 'Admin User', 'Facilities', 'Low', '2026-02-07');
+-- Sessions (Schedule) table
+CREATE TABLE IF NOT EXISTS sessions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  day TEXT NOT NULL,
+  time TEXT NOT NULL,
+  course TEXT NOT NULL,
+  room TEXT NOT NULL,
+  instructor TEXT NOT NULL,
+  teacher_email TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert demo sessions
+INSERT OR IGNORE INTO sessions (day, time, course, room, instructor, teacher_email) VALUES
+('Monday', '08:00', 'Cosmetology', 'Room 101', 'Joan Doe', 'james.wilson@beautex.edu'),
+('Monday', '11:00', 'Beauty Therapy', 'Lab A', 'Dr. Smith', 'staff@beautex.edu'),
+('Tuesday', '09:00', 'Catering', 'Kitchen 1', 'Chef Pierre', 'staff@beautex.edu'),
+('Wednesday', '14:00', 'Cyber Security', 'IT Lab 2', 'Prof. Alice', 'staff@beautex.edu'),
+('Thursday', '10:00', 'Website Development', 'IT Lab 1', 'Mark John', 'staff@beautex.edu'),
+('Friday', '08:00', 'Cosmetology', 'Room 101', 'Joan Doe', 'james.wiltex.edu');
+
+-- Trainer Academic Reports table
+CREATE TABLE IF NOT EXISTS trainer_reports (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  student_id TEXT NOT NULL,
+  student_name TEXT NOT NULL,
+  registration_number TEXT NOT NULL,
+  course_unit TEXT NOT NULL,
+  trainer_name TEXT NOT NULL,
+  trainer_email TEXT NOT NULL,
+  reporting_period TEXT NOT NULL, -- e.g., "Week 1", "February"
+  
+  -- Attendance
+  total_lessons INTEGER DEFAULT 0,
+  attended_lessons INTEGER DEFAULT 0,
+  attendance_percentage REAL DEFAULT 0.0,
+  
+  -- Theory Assessment
+  theory_topics TEXT,
+  theory_score REAL,
+  theory_remarks TEXT,
+  
+  -- Practical Assessment
+  practical_tasks TEXT,
+  equipment_used TEXT,
+  skill_level TEXT CHECK(skill_level IN ('Excellent', 'Good', 'Fair', 'Poor')),
+  safety_compliance TEXT CHECK(safety_compliance IN ('Yes', 'No')),
+  
+  -- Discipline & Conduct
+  discipline_issues TEXT,
+  trainer_observations TEXT,
+  
+  -- Overall
+  progress_summary TEXT,
+  recommendation TEXT CHECK(recommendation IN ('Proceed', 'Improve', 'Review')),
+  
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- Daily Activity Reports
+CREATE TABLE IF NOT EXISTS daily_activity_reports (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  report_date DATE NOT NULL UNIQUE,
+  reported_by TEXT NOT NULL,
+  
+  -- Academic Activities
+  classes_conducted INTEGER DEFAULT 0,
+  total_attendance_percentage REAL DEFAULT 0.0,
+  assessments_conducted INTEGER DEFAULT 0,
+  
+  -- Student Activities
+  total_students_present INTEGER DEFAULT 0,
+  total_students_absent INTEGER DEFAULT 0,
+  late_arrivals INTEGER DEFAULT 0,
+  new_enrollments INTEGER DEFAULT 0,
+  
+  -- Staff & Faculty
+  staff_present INTEGER DEFAULT 0,
+  staff_absent INTEGER DEFAULT 0,
+  
+  -- Facilities & Resources
+  facilities_issues TEXT,
+  equipment_maintenance TEXT,
+  
+  -- Notable Events
+  notable_events TEXT,
+  incidents TEXT,
+  achievements TEXT,
+  
+  -- General Notes
+  additional_notes TEXT,
+  
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Weekly Summary Reports
+CREATE TABLE IF NOT EXISTS weekly_summary_reports (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  week_start_date DATE NOT NULL,
+  week_end_date DATE NOT NULL,
+  reported_by TEXT NOT NULL,
+  
+  -- Aggregated Statistics
+  total_classes_conducted INTEGER DEFAULT 0,
+  average_attendance REAL DEFAULT 0.0,
+  total_assessments INTEGER DEFAULT 0,
+  
+  -- Student Metrics
+  active_students INTEGER DEFAULT 0,
+  avg_student_attendance REAL DEFAULT 0.0,
+  disciplinary_cases INTEGER DEFAULT 0,
+  
+  -- Academic Progress
+  courses_completed INTEGER DEFAULT 0,
+  new_enrollments INTEGER DEFAULT 0,
+  
+  -- Highlights & Challenges
+  key_achievements TEXT,
+  challenges_faced TEXT,
+  action_items TEXT,
+  
+  -- Financial (optional for future)
+  revenue_collected REAL DEFAULT 0.0,
+  
+  notes TEXT,
+  
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(week_start_date, week_end_date)
+);
+
+-- Monthly Summary Reports
+CREATE TABLE IF NOT EXISTS monthly_summary_reports (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  month TEXT NOT NULL,
+  month_start_date DATE NOT NULL,
+  month_end_date DATE NOT NULL,
+  reported_by TEXT NOT NULL,
+  
+  -- Enrollment Statistics
+  total_students INTEGER DEFAULT 0,
+  new_enrollments INTEGER DEFAULT 0,
+  graduations INTEGER DEFAULT 0,
+  dropouts INTEGER DEFAULT 0,
+  
+  -- Academic Performance
+  total_classes INTEGER DEFAULT 0,
+  average_attendance REAL DEFAULT 0.0,
+  total_assessments INTEGER DEFAULT 0,
+  average_pass_rate REAL DEFAULT 0.0,
+  
+  -- Faculty & Staff
+  total_faculty INTEGER DEFAULT 0,
+  new_hires INTEGER DEFAULT 0,
+  faculty_departures INTEGER DEFAULT 0,
+  
+  -- Financial Summary
+  revenue REAL DEFAULT 0.0,
+  expenses REAL DEFAULT 0.0,
+  
+  -- Strategic Overview
+  major_achievements TEXT,
+  challenges TEXT,
+  strategic_initiatives TEXT,
+  goals_next_month TEXT,
+  
+  additional_notes TEXT,
+  
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(month_start_date, month_end_date)
+);

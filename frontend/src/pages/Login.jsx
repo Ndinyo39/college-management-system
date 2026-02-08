@@ -26,16 +26,35 @@ export default function Login() {
         }
     };
 
-    const demoLogin = (role) => {
-        if (role === 'admin') {
-            setEmail('admin@beautex.edu');
-            setPassword('admin123');
+    const demoLogin = async (role) => {
+        let demoEmail = '';
+        let demoPassword = 'password123';
+
+        if (role === 'superadmin') {
+            demoEmail = 'superadmin@beautex.edu';
+            demoPassword = 'superadmin123';
+        } else if (role === 'admin') {
+            demoEmail = 'admin@beautex.edu';
+            demoPassword = 'admin123';
         } else if (role === 'teacher') {
-            setEmail('james.wilson@beautex.edu');
-            setPassword('password123');
+            demoEmail = 'james.wilson@beautex.edu';
         } else if (role === 'student') {
-            setEmail('sarah.johnson@beautex.edu');
-            setPassword('password123');
+            demoEmail = 'sarah.johnson@beautex.edu';
+        }
+
+        setEmail(demoEmail);
+        setPassword(demoPassword);
+
+        // Auto-submit
+        setError('');
+        setLoading(true);
+        try {
+            await login(demoEmail, demoPassword);
+            navigate('/dashboard');
+        } catch (err) {
+            setError(err.response?.data?.error || 'Auth system failure');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -44,8 +63,8 @@ export default function Login() {
             <div className="w-full max-w-sm">
                 {/* School Seal Screenshot 4 */}
                 <div className="text-center mb-10">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gold rounded-2xl mb-6 shadow-xl">
-                        <GraduationCap className="w-12 h-12 text-maroon" />
+                    <div className="inline-flex items-center justify-center w-24 h-24 bg-white rounded-2xl mb-6 shadow-xl overflow-hidden border-4 border-gold">
+                        <img src="/src/logo.jpg" alt="Beautex Logo" className="w-full h-full object-cover" />
                     </div>
                     <div className="space-y-2">
                         <h1 className="text-xl font-black text-white uppercase tracking-widest">Beautex</h1>
@@ -103,16 +122,20 @@ export default function Login() {
                     </form>
 
                     {/* Quick Labels from Screenshot 4 */}
-                    <div className="mt-8 pt-6 border-t border-gray-50 grid grid-cols-3 gap-2">
-                        <div className="p-2 bg-gray-50 rounded-xl text-center">
+                    <div className="mt-8 pt-6 border-t border-gray-50 flex flex-wrap justify-center gap-2">
+                        <div className="p-2 bg-gray-50 rounded-xl text-center min-w-[70px]">
+                            <p className="text-[7px] font-black uppercase text-gray-400 tracking-widest mb-1">Super</p>
+                            <button onClick={() => demoLogin('superadmin')} className="text-[9px] font-bold text-maroon">Login</button>
+                        </div>
+                        <div className="p-2 bg-gray-50 rounded-xl text-center min-w-[70px]">
                             <p className="text-[7px] font-black uppercase text-gray-400 tracking-widest mb-1">Admin</p>
                             <button onClick={() => demoLogin('admin')} className="text-[9px] font-bold text-maroon">Login</button>
                         </div>
-                        <div className="p-2 bg-gray-50 rounded-xl text-center">
+                        <div className="p-2 bg-gray-50 rounded-xl text-center min-w-[70px]">
                             <p className="text-[7px] font-black uppercase text-gray-400 tracking-widest mb-1">Teacher</p>
                             <button onClick={() => demoLogin('teacher')} className="text-[9px] font-bold text-maroon">Login</button>
                         </div>
-                        <div className="p-2 bg-gray-50 rounded-xl text-center">
+                        <div className="p-2 bg-gray-50 rounded-xl text-center min-w-[70px]">
                             <p className="text-[7px] font-black uppercase text-gray-400 tracking-widest mb-1">Student</p>
                             <button onClick={() => demoLogin('student')} className="text-[9px] font-bold text-maroon">Login</button>
                         </div>

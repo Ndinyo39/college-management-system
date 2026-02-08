@@ -1,0 +1,12 @@
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m647[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m19:34:50[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/context/AuthContext.jsx, /src/pages/Grades.jsx, /src/pages/Dashboard.jsx, /src/pages/Attendance.jsx, /src/pages/Schedule.jsx, /src/pages/AcademicReports.jsx, /src/pages/Students.jsx, /src/pages/Announcements.jsx, /src/pages/Courses.jsx, /src/pages/Users.jsx, /src/pages/Faculty.jsx, /src/pages/ActivityReports.jsx, /src/pages/TeacherDashboard.jsx, /src/pages/StudentDashboard.jsx, /src/components/layout/Navbar.jsx[22m
+[2m19:34:51[22m [36m[1m[vite][22m[39m [33mhmr invalidate [39m[2m/src/context/AuthContext.jsx[22m Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m19:34:51[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css, /src/pages/Grades.jsx, /src/pages/Dashboard.jsx, /src/components/layout/Layout.jsx, /src/pages/Attendance.jsx, /src/pages/Login.jsx, /src/pages/Schedule.jsx, /src/pages/AcademicReports.jsx, /src/pages/Announcements.jsx, /src/pages/Users.jsx, /src/pages/TeacherDashboard.jsx, /src/pages/StudentDashboard.jsx, /src/components/layout/Sidebar.jsx, /src/components/layout/Navbar.jsx[22m
+[2m19:34:52[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Users.jsx, /src/index.css[22m
+[2m19:34:55[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Users.jsx, /src/index.css[22m
+[2m19:34:57[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Users.jsx, /src/index.css[22m

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { studentsAPI } from '../services/api';
-import { Plus, Search, Edit, Trash2, X, Printer } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X, Printer, FileBarChart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import IDCard from '../components/shared/IDCard';
 
 export default function Students() {
+    const navigate = useNavigate();
     const [students, setStudents] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [showModal, setShowModal] = useState(false);
@@ -42,8 +44,25 @@ export default function Students() {
         }
     };
 
+    const validateForm = () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!formData.id) return 'Enrollment ID is required';
+        if (!formData.name) return 'Full Name is required';
+        if (!emailRegex.test(formData.email)) return 'Invalid email format';
+        if (!formData.course) return 'Please select a specialization course';
+        if (formData.gpa < 0 || formData.gpa > 4) return 'GPA must be between 0.0 and 4.0';
+        return null;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const validationError = validateForm();
+        if (validationError) {
+            alert(validationError);
+            return;
+        }
+
         try {
             if (editingStudent) {
                 await studentsAPI.update(editingStudent.id, formData);
@@ -56,7 +75,7 @@ export default function Students() {
             resetForm();
         } catch (error) {
             console.error('Error saving student:', error);
-            alert(error.response?.data?.error || 'Failed to save student record. Please ensure all required fields (ID, Name, Email, Course) are provided.');
+            alert(error.response?.data?.error || 'Failed to save student record.');
         }
     };
 
@@ -223,6 +242,7 @@ export default function Students() {
                                 </td>
                                 <td className="px-6 py-5">
                                     <div className="flex gap-3">
+                                        <button onClick={() => navigate(`/reports?studentId=${student.id}`)} className="p-2 text-primary/20 hover:text-maroon transition-colors border border-gray-100 rounded-lg" title="View Academic Reports"><FileBarChart className="w-3.5 h-3.5" /></button>
                                         <button onClick={() => handlePrintID(student)} className="p-2 text-primary/20 hover:text-primary transition-colors border border-gray-100 rounded-lg" title="Print ID Card"><Printer className="w-3.5 h-3.5" /></button>
                                         <button onClick={() => handleEdit(student)} className="p-2 text-primary/20 hover:text-primary transition-colors border border-gray-100 rounded-lg"><Edit className="w-3.5 h-3.5" /></button>
                                         <button onClick={() => handleDelete(student.id)} className="p-2 text-primary/10 hover:text-red-600 transition-colors border border-gray-100 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>

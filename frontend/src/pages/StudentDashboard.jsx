@@ -5,33 +5,49 @@ import { useAuth } from '../context/AuthContext';
 
 export default function StudentDashboard() {
     const { user } = useAuth();
+    const [studentProfile, setStudentProfile] = useState(null);
+    const [courseDetails, setCourseDetails] = useState(null);
     const [stats, setStats] = useState({
         enrolledCourses: 0,
-        avgGrade: 'A-',
-        attendanceRate: '98%',
-        credits: 12
+        avgGrade: 'N/A',
+        attendanceRate: '0%',
+        credits: 0
     });
     const [recentAnnouncements, setRecentAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        if (user) {
+            fetchData();
+        }
+    }, [user]);
 
     const fetchData = async () => {
         try {
-            const [coursesRes, announcementsRes] = await Promise.all([
+            // 1. Fetch all data needed
+            const [studentsRes, coursesRes, announcementsRes] = await Promise.all([
+                studentsAPI.getAll(),
                 coursesAPI.getAll(),
                 announcementsAPI.getAll()
             ]);
 
-            // Demo logic: Sarah Johnson is in "Cosmetology"
-            setStats({
-                enrolledCourses: 1,
-                avgGrade: '3.8 GPA',
-                attendanceRate: '96%',
-                credits: 15
-            });
+            // 2. Find current student profile
+            const profile = studentsRes.data.find(s => s.email === user.email);
+            setStudentProfile(profile);
+
+            if (profile) {
+                // 3. Find enrolled course details
+                const course = coursesRes.data.find(c => c.name === profile.course);
+                setCourseDetails(course);
+
+                // 4. Calculate Stats (Mocking specific grade/attendance calculations for now as detailed data might be sparse)
+                setStats({
+                    enrolledCourses: course ? 1 : 0,
+                    avgGrade: profile.gpa ? `${profile.gpa} GPA` : 'N/A',
+                    attendanceRate: '96%', // Placeholder or fetch from attendanceAPI if available
+                    credits: 15 // Placeholder or derive from course duration
+                });
+            }
 
             setRecentAnnouncements(announcementsRes.data.slice(0, 3));
         } catch (error) {
@@ -43,19 +59,12 @@ export default function StudentDashboard() {
 
     if (loading) return <div className="p-8 text-center font-black uppercase tracking-widest text-maroon">Loading Student Portal...</div>;
 
-    const statsDisplay = [
-        { title: 'My Courses', value: stats.enrolledCourses, icon: BookOpen },
-        { title: 'GPA Score', value: stats.avgGrade, icon: Award },
-        { title: 'Attendance', value: stats.attendanceRate, icon: UserCheck },
-        { title: 'Credit Hours', value: stats.credits, icon: Clock },
-    ];
-
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex justify-between items-end mb-4">
                 <div>
                     <h1 className="text-3xl font-black text-gray-800 uppercase tracking-tighter">Student Portal</h1>
-                    <p className="text-sm text-gray-400 font-medium">Welcome back, {user?.email.split('@')[0]}</p>
+                    <p className="text-sm text-gray-400 font-medium">Welcome back, {studentProfile ? studentProfile.name : user?.email.split('@')[0]}</p>
                 </div>
                 <div className="text-right">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
@@ -63,7 +72,12 @@ export default function StudentDashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {statsDisplay.map((stat, index) => {
+                {[
+                    { title: 'My Courses', value: stats.enrolledCourses, icon: BookOpen },
+                    { title: 'GPA Score', value: stats.avgGrade, icon: Award },
+                    { title: 'Attendance', value: stats.attendanceRate, icon: UserCheck },
+                    { title: 'Credit Hours', value: stats.credits, icon: Clock },
+                ].map((stat, index) => {
                     const Icon = stat.icon;
                     return (
                         <div key={index} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-xl hover:shadow-2xl transition-all group overflow-hidden relative">
@@ -93,46 +107,52 @@ export default function StudentDashboard() {
                                 </div>
                                 <h2 className="text-xs font-black text-white/60 uppercase tracking-widest">Ongoing Curriculum</h2>
                             </div>
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                                <div>
-                                    <h3 className="text-2xl font-black text-white mb-2">Cosmetology & Hair Styling</h3>
-                                    <p className="text-sm text-white/50 font-medium">Instructor: Prof. Sarah Anderson • Room 101</p>
-                                </div>
-                                <button className="bg-gold text-maroon px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl">
-                                    Course Materials
-                                </button>
-                            </div>
-                            <div className="mt-8 pt-8 border-t border-white/5 grid grid-cols-3 gap-4">
-                                <div>
-                                    <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Status</p>
-                                    <p className="text-xs font-bold text-green-400 uppercase">Active</p>
-                                </div>
-                                <div>
-                                    <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Semester</p>
-                                    <p className="text-xs font-bold text-white uppercase">4th Year</p>
-                                </div>
-                                <div>
-                                    <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Progress</p>
-                                    <p className="text-xs font-bold text-white uppercase">85%</p>
-                                </div>
-                            </div>
+                            {courseDetails ? (
+                                <>
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                        <div>
+                                            <h3 className="text-2xl font-black text-white mb-2">{courseDetails.name}</h3>
+                                            <p className="text-sm text-white/50 font-medium">Instructor: {courseDetails.instructor} • {courseDetails.room}</p>
+                                        </div>
+                                        <button className="bg-gold text-maroon px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl">
+                                            Course Materials
+                                        </button>
+                                    </div>
+                                    <div className="mt-8 pt-8 border-t border-white/5 grid grid-cols-3 gap-4">
+                                        <div>
+                                            <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Status</p>
+                                            <p className="text-xs font-bold text-green-400 uppercase">Active</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Semester</p>
+                                            <p className="text-xs font-bold text-white uppercase">{studentProfile?.semester || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Progress</p>
+                                            <p className="text-xs font-bold text-white uppercase">In Progress</p>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-white/60">No active course enrollment found. Contact administration.</div>
+                            )}
                         </div>
                     </div>
 
                     {/* Quick Student Actions */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <button className="flex flex-col items-center gap-3 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+                        <a href="/grades" className="flex flex-col items-center gap-3 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
                             <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 transition-colors">
                                 <FileText className="w-6 h-6 text-blue-600 group-hover:text-white" />
                             </div>
                             <span className="text-[9px] font-black uppercase text-gray-500 tracking-widest">Grades</span>
-                        </button>
-                        <button className="flex flex-col items-center gap-3 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+                        </a>
+                        <a href="/attendance" className="flex flex-col items-center gap-3 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
                             <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center group-hover:bg-green-600 transition-colors">
                                 <Clock className="w-6 h-6 text-green-600 group-hover:text-white" />
                             </div>
                             <span className="text-[9px] font-black uppercase text-gray-500 tracking-widest">Absences</span>
-                        </button>
+                        </a>
                         <button className="flex flex-col items-center gap-3 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
                             <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center group-hover:bg-purple-600 transition-colors">
                                 <Zap className="w-6 h-6 text-purple-600 group-hover:text-white" />

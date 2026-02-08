@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? window.location.origin + '/api/' : 'http://localhost:5000/api/');
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -79,6 +79,57 @@ export const announcementsAPI = {
 export const notificationsAPI = {
     getAll: () => api.get('notifications'),
     markRead: (id) => api.put(`notifications/${id}/read`),
+};
+
+// Sessions (Schedule)
+export const sessionsAPI = {
+    getAll: () => api.get('sessions'),
+    create: (data) => api.post('sessions', data),
+    delete: (id) => api.delete(`sessions/${id}`),
+};
+
+// Users (Superadmin Only)
+export const usersAPI = {
+    getAll: () => api.get('users'),
+    updateRole: (id, role) => api.put(`users/${id}/role`, { role }),
+    updateStatus: (id, status) => api.put(`users/${id}/status`, { status }),
+    resetPassword: (id, newPassword) => api.put(`users/${id}/password`, { newPassword }),
+    delete: (id) => api.delete(`users/${id}`),
+};
+
+// Academic Reports
+export const reportsAPI = {
+    getAll: (params) => api.get('reports', { params }),
+    getStudentReports: (studentId) => api.get(`reports/student/${studentId}`),
+    create: (data) => api.post('reports', data),
+    delete: (id) => api.delete(`reports/${id}`),
+};
+
+// Activity Reports (College-wide)
+export const activityReportsAPI = {
+    // Daily Reports
+    getDailyReports: (params) => api.get('activity-reports/daily', { params }),
+    getDailyReport: (date) => api.get(`activity-reports/daily/${date}`),
+    createDailyReport: (data) => api.post('activity-reports/daily', data),
+    updateDailyReport: (id, data) => api.put(`activity-reports/daily/${id}`, data),
+    deleteDailyReport: (id) => api.delete(`activity-reports/daily/${id}`),
+
+    // Weekly Reports
+    getWeeklyReports: (params) => api.get('activity-reports/weekly', { params }),
+    getWeeklyReport: (id) => api.get(`activity-reports/weekly/${id}`),
+    createWeeklyReport: (data) => api.post('activity-reports/weekly', data),
+    updateWeeklyReport: (id, data) => api.put(`activity-reports/weekly/${id}`, data),
+    deleteWeeklyReport: (id) => api.delete(`activity-reports/weekly/${id}`),
+
+    // Monthly Reports
+    getMonthlyReports: (params) => api.get('activity-reports/monthly', { params }),
+    getMonthlyReport: (id) => api.get(`activity-reports/monthly/${id}`),
+    createMonthlyReport: (data) => api.post('activity-reports/monthly', data),
+    updateMonthlyReport: (id, data) => api.put(`activity-reports/monthly/${id}`, data),
+    deleteMonthlyReport: (id) => api.delete(`activity-reports/monthly/${id}`),
+
+    // Summary
+    getSummary: () => api.get('activity-reports/summary'),
 };
 
 export default api;

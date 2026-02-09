@@ -42,7 +42,7 @@ export default function Sidebar() {
             <div className="px-6 py-6 border-b border-gray-50 mb-4">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden shadow-sm border border-gray-100">
-                        <img src="/src/logo.jpg" alt="Beautex Logo" className="w-full h-full object-cover" />
+                        <img src="/logo.jpg" alt="Beautex Logo" className="w-full h-full object-cover" />
                     </div>
                     <span className="text-sm font-black text-maroon uppercase tracking-widest">Beautex CMS</span>
                 </div>

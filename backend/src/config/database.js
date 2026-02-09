@@ -1,5 +1,3 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -11,6 +9,8 @@ const __dirname = path.dirname(__filename);
 const dbPath = path.join(__dirname, '../../database.sqlite');
 const DATABASE_URL = process.env.DATABASE_URL;
 
+const { Pool } = pg;
+
 let db;
 let pgPool;
 
@@ -19,10 +19,10 @@ export async function getDb() {
     // If DATABASE_URL is present, we use PostgreSQL (Supabase)
     if (DATABASE_URL) {
         if (!pgPool) {
-            pgPool = new pg.Pool({
+            pgPool = new Pool({
                 connectionString: DATABASE_URL,
                 ssl: {
-                    rejectUnauthorized: false // Required for Supabase/Vercel
+                    rejectUnauthorized: false
                 }
             });
             console.log('🐘 Connected to Supabase (PostgreSQL)');
@@ -30,8 +30,11 @@ export async function getDb() {
         return pgPool;
     }
 
-    // Fallback to SQLite
+    // Fallback to SQLite (using dynamic imports to avoid errors in environments that don't support it)
     if (!db) {
+        const sqlite3 = (await import('sqlite3')).default;
+        const { open } = await import('sqlite');
+
         db = await open({
             filename: dbPath,
             driver: sqlite3.Database
@@ -69,12 +72,8 @@ export async function initializeDatabase() {
 export async function query(sql, params = []) {
     const database = await getDb();
     if (DATABASE_URL) {
-        const res = await database.query(sql.replace(/\?/g, (val, i) => `$${params.indexOf(val) + 1}`), params);
-        // Note: Simple regex replacement for ? -> $1, $2 is fragile for complex queries, 
-        // but works for the current codebase's simple queries.
         // For production pg-native syntax is better ($1, $2, etc)
-
-        // Let's improve the replacement to actually count parameters correctly
+        // Let's count parameters correctly for PostgreSQL compatibility
         let paramCount = 0;
         const pgSql = sql.replace(/\?/g, () => {
             paramCount++;

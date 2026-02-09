@@ -17,10 +17,28 @@ app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb', parameterLimit: 100000 }));
 
 app.use(helmet());
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174'
+];
+
+if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? process.env.FRONTEND_URL
-        : ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'],
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+            callback(null, true);
+        } else {
+            console.warn(`Blocked by CORS: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 
@@ -36,13 +54,39 @@ const initDb = async () => {
         await initializeDatabase();
     } catch (error) {
         console.error('❌ Database initialization failed:', error);
-        process.exit(1);
     }
 };
 initDb();
 
 // API Routes
 app.use('/api', apiRoutes);
+
+// Database check route for debugging
+app.get('/api/db-check', async (req, res) => {
+    try {
+        const db = await import('./config/database.js');
+        const userCount = await db.queryOne('SELECT COUNT(*) as count FROM users');
+        res.json({
+            status: '✅ Connected to Database',
+            database: process.env.DATABASE_URL ? 'PostgreSQL (Supabase)' : 'SQLite',
+            users: userCount.count,
+            message: 'If users is 0, you need to run the SQL in Supabase editor.'
+        });
+    } catch (error) {
+        console.error('❌ Database Check Failed:', error);
+        res.status(500).json({
+            status: '❌ Database Connection Failed',
+            error: error.message,
+            stack: process.env.NODE_ENV === 'production' ? null : error.stack,
+            query: 'SELECT COUNT(*) FROM users',
+            env: {
+                hasDatabaseUrl: !!process.env.DATABASE_URL,
+                nodeEnv: process.env.NODE_ENV
+            },
+            note: 'Ensure you have set DATABASE_URL in Vercel and run the schema SQL in Supabase.'
+        });
+    }
+});
 
 // Root route
 app.get('/', (req, res) => {

@@ -18,6 +18,8 @@ export default function Faculty() {
         fetchFaculty();
     }, []);
 
+    const [filteredFaculty, setFilteredFaculty] = useState([]);
+
     const fetchFaculty = async () => {
         try {
             const { data } = await facultyAPI.getAll();
@@ -27,8 +29,6 @@ export default function Faculty() {
             console.error('Error fetching faculty:', error);
         }
     };
-
-    const [filteredFaculty, setFilteredFaculty] = useState([]);
 
     useEffect(() => {
         const filtered = faculty.filter(member =>
@@ -71,8 +71,6 @@ export default function Faculty() {
             name: member.name,
             email: member.email,
             department: member.department,
-            position: member.position,
-            specialization: member.specialization || '',
             position: member.position,
             specialization: member.specialization || '',
             contact: member.contact || '',

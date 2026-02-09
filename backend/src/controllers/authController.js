@@ -39,6 +39,7 @@ export async function register(req, res) {
 export async function login(req, res) {
     try {
         const { email, password } = req.body;
+        console.log(`🔑 Login attempt for: ${email}`);
 
         // Validate input
         if (!email || !password) {
@@ -46,14 +47,19 @@ export async function login(req, res) {
         }
 
         // Find user
+        console.log('🔍 Searching for user in database...');
         const user = await queryOne('SELECT * FROM users WHERE email = ?', [email]);
+
         if (!user) {
+            console.log(`❌ User not found: ${email}`);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
+        console.log(`✅ User found. Verifying password for: ${email}`);
         // Verify password
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
+            console.log(`❌ Invalid password for: ${email}`);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 

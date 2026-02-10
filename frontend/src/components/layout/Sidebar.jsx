@@ -77,10 +77,10 @@ export default function Sidebar() {
             <div className="p-4 bg-gray-50/50">
                 <div className="flex items-center gap-3 p-2">
                     <div className="w-9 h-9 bg-maroon/10 text-maroon font-black rounded-full flex items-center justify-center text-xs">
-                        {user?.email?.[0].toUpperCase() || 'U'}
+                        {(user?.email?.[0] || 'U').toUpperCase()}
                     </div>
                     <div className="overflow-hidden">
-                        <p className="text-xs font-bold text-gray-800 truncate">{user?.email.split('@')[0]}</p>
+                        <p className="text-xs font-bold text-gray-800 truncate">{user?.email?.split('@')[0] || 'User'}</p>
                         <p className="text-[10px] text-gray-400 truncate uppercase tracking-widest font-black">{user?.role}</p>
                     </div>
                 </div>

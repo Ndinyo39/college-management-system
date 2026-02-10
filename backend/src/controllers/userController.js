@@ -1,89 +1,111 @@
 import bcrypt from 'bcryptjs';
-import { query, run } from '../config/database.js';
+import { getDb } from '../config/database.js';
 
-export const getAllUsers = async (req, res) => {
+async function isMongo() {
+    const db = await getDb();
+    return db.constructor.name === 'NativeConnection';
+}
+
+export async function getAllUsers(req, res) {
     try {
-        const users = await query('SELECT id, email, role, status, created_at FROM users ORDER BY created_at DESC');
+        if (await isMongo()) {
+            const User = (await import('../models/mongo/User.js')).default;
+            const users = await User.find().select('-password').sort({ email: 1 });
+            return res.json(users);
+        }
+
+        const db = await getDb();
+        const users = await db.all('SELECT id, email, role, status FROM users ORDER BY email');
         res.json(users);
     } catch (error) {
-        console.error('Error fetching users:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Get users error:', error);
+        res.status(500).json({ error: 'Failed to fetch users' });
     }
-};
+}
 
-export const updateUserRole = async (req, res) => {
-    const { id } = req.params;
-    const { role } = req.body;
-
-    if (!['superadmin', 'admin', 'teacher', 'student'].includes(role)) {
-        return res.status(400).json({ error: 'Invalid role' });
-    }
-
+export async function updateUserRole(req, res) {
     try {
-        // Prevent changing own role if it's the last superadmin (safety check)
-        const user = await query('SELECT role FROM users WHERE id = ?', [id]);
-        if (user[0]?.role === 'superadmin' && role !== 'superadmin') {
-            const superadmins = await query("SELECT COUNT(*) as count FROM users WHERE role = 'superadmin'");
-            if (superadmins[0].count <= 1) {
-                return res.status(403).json({ error: 'Cannot downgrade the only superadmin record' });
-            }
+        const { role } = req.body;
+
+        if (await isMongo()) {
+            const User = (await import('../models/mongo/User.js')).default;
+            const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-password');
+            if (!user) return res.status(404).json({ error: 'User not found' });
+            return res.json(user);
         }
 
-        await run('UPDATE users SET role = ? WHERE id = ?', [role, id]);
-        res.json({ message: 'User role updated successfully' });
+        const db = await getDb();
+        await db.run('UPDATE users SET role = ? WHERE id = ?', [role, req.params.id]);
+        const user = await db.get('SELECT id, email, role, status FROM users WHERE id = ?', [req.params.id]);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json(user);
     } catch (error) {
-        console.error('Error updating user role:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Update user role error:', error);
+        res.status(500).json({ error: 'Failed to update user role' });
     }
-};
+}
 
-export const toggleUserStatus = async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
-
-    if (!['Active', 'Inactive'].includes(status)) {
-        return res.status(400).json({ error: 'Invalid status' });
-    }
-
+export async function toggleUserStatus(req, res) {
     try {
-        await run('UPDATE users SET status = ? WHERE id = ?', [status, id]);
-        res.json({ message: `User status set to ${status}` });
-    } catch (error) {
-        console.error('Error toggling user status:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-};
-
-export const deleteUser = async (req, res) => {
-    const { id } = req.params;
-    try {
-        // Prevent deleting self
-        if (req.user.id == id) {
-            return res.status(403).json({ error: 'Cannot delete your own account' });
+        if (await isMongo()) {
+            const User = (await import('../models/mongo/User.js')).default;
+            const user = await User.findById(req.params.id);
+            if (!user) return res.status(404).json({ error: 'User not found' });
+            user.status = user.status === 'Active' ? 'Inactive' : 'Active';
+            await user.save();
+            return res.json({ id: user._id, email: user.email, role: user.role, status: user.status });
         }
 
-        await run('DELETE FROM users WHERE id = ?', [id]);
+        const db = await getDb();
+        const user = await db.get('SELECT * FROM users WHERE id = ?', [req.params.id]);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
+        await db.run('UPDATE users SET status = ? WHERE id = ?', [newStatus, req.params.id]);
+        res.json({ id: user.id, email: user.email, role: user.role, status: newStatus });
+    } catch (error) {
+        console.error('Toggle user status error:', error);
+        res.status(500).json({ error: 'Failed to toggle user status' });
+    }
+}
+
+export async function resetUserPassword(req, res) {
+    try {
+        const { password } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        if (await isMongo()) {
+            const User = (await import('../models/mongo/User.js')).default;
+            const user = await User.findByIdAndUpdate(req.params.id, { password: hashedPassword }, { new: true }).select('-password');
+            if (!user) return res.status(404).json({ error: 'User not found' });
+            return res.json({ message: 'Password reset successfully' });
+        }
+
+        const db = await getDb();
+        const result = await db.run('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, req.params.id]);
+        if (result.changes === 0) return res.status(404).json({ error: 'User not found' });
+        res.json({ message: 'Password reset successfully' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ error: 'Failed to reset password' });
+    }
+}
+
+export async function deleteUser(req, res) {
+    try {
+        if (await isMongo()) {
+            const User = (await import('../models/mongo/User.js')).default;
+            const result = await User.findByIdAndDelete(req.params.id);
+            if (!result) return res.status(404).json({ error: 'User not found' });
+            return res.json({ message: 'User deleted successfully' });
+        }
+
+        const db = await getDb();
+        const result = await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
+        if (result.changes === 0) return res.status(404).json({ error: 'User not found' });
         res.json({ message: 'User deleted successfully' });
     } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Delete user error:', error);
+        res.status(500).json({ error: 'Failed to delete user' });
     }
-};
-
-export const resetUserPassword = async (req, res) => {
-    const { id } = req.params;
-    const { newPassword } = req.body;
-
-    if (!newPassword || newPassword.length < 6) {
-        return res.status(400).json({ error: 'Password must be at least 6 characters long' });
-    }
-
-    try {
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await run('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, id]);
-        res.json({ message: 'Password updated successfully' });
-    } catch (error) {
-        console.error('Error resetting password:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-};
+}

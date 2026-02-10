@@ -2,21 +2,39 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import pg from 'pg';
+import mongoose from 'mongoose';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = path.join(__dirname, '../../database.sqlite');
+const dbPath = process.env.DB_PATH || path.join(__dirname, '../../database.sqlite');
 const DATABASE_URL = process.env.DATABASE_URL;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 const { Pool } = pg;
 
 let db;
 let pgPool;
+let mongoConnection;
 
 // Initialize database connection
 export async function getDb() {
-    // If DATABASE_URL is present, we use PostgreSQL (Supabase)
+    // 1. Check for MongoDB Atlas (Priority)
+    if (MONGODB_URI) {
+        if (!mongoConnection) {
+            try {
+                await mongoose.connect(MONGODB_URI);
+                mongoConnection = mongoose.connection;
+                console.log('🍃 Connected to MongoDB Atlas');
+            } catch (err) {
+                console.error('❌ MongoDB Connection Error:', err);
+                throw err;
+            }
+        }
+        return mongoConnection;
+    }
+
+    // 2. Check for PostgreSQL (Supabase)
     if (DATABASE_URL) {
         if (!pgPool) {
             pgPool = new Pool({
@@ -30,7 +48,7 @@ export async function getDb() {
         return pgPool;
     }
 
-    // Fallback to SQLite (using dynamic imports to avoid errors in environments that don't support it)
+    // 3. Fallback to SQLite
     if (!db) {
         const sqlite3 = (await import('sqlite3')).default;
         const { open } = await import('sqlite');
@@ -46,8 +64,12 @@ export async function getDb() {
     return db;
 }
 
-// Initialize database schema
+// Initialize database schema (Only for SQLite)
 export async function initializeDatabase() {
+    if (MONGODB_URI) {
+        console.log('ℹ️ MongoDB detected. Schemas are handled by Mongoose models.');
+        return;
+    }
     if (DATABASE_URL) {
         console.log('ℹ️ Skipping auto-initialization for PostgreSQL. Use the Supabase SQL editor.');
         return;
@@ -68,12 +90,10 @@ export async function initializeDatabase() {
     }
 }
 
-// Generic query functions
+// Generic query functions (Will be bypassed by Mongoose models)
 export async function query(sql, params = []) {
     const database = await getDb();
     if (DATABASE_URL) {
-        // For production pg-native syntax is better ($1, $2, etc)
-        // Let's count parameters correctly for PostgreSQL compatibility
         let paramCount = 0;
         const pgSql = sql.replace(/\?/g, () => {
             paramCount++;
@@ -108,7 +128,7 @@ export async function run(sql, params = []) {
             return `$${paramCount}`;
         });
         const result = await database.query(pgSql, params);
-        return { lastID: null, changes: result.rowCount }; // Mocking SQLite return style
+        return { lastID: null, changes: result.rowCount };
     }
     return database.run(sql, params);
 }

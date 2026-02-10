@@ -10,7 +10,7 @@ export default function Faculty() {
     const [showProfile, setShowProfile] = useState(null);
     const [editingFaculty, setEditingFaculty] = useState(null);
     const [formData, setFormData] = useState({
-        name: '', email: '', department: '', position: '', specialization: '', contact: '', passport: ''
+        id: '', name: '', email: '', department: '', position: '', specialization: '', contact: '', passport: '', courses: '', status: 'Active'
     });
     const [printingFaculty, setPrintingFaculty] = useState(null);
 
@@ -54,7 +54,8 @@ export default function Faculty() {
             if (editingFaculty) {
                 await facultyAPI.update(editingFaculty.id, formData);
             } else {
-                await facultyAPI.create(formData);
+                const newId = `FAC-${Date.now().toString().slice(-6)}`;
+                await facultyAPI.create({ ...formData, id: newId });
             }
             setShowModal(false);
             setEditingFaculty(null);
@@ -68,20 +69,23 @@ export default function Faculty() {
     const handleEdit = (member) => {
         setEditingFaculty(member);
         setFormData({
+            id: member.id,
             name: member.name,
             email: member.email,
             department: member.department,
             position: member.position,
             specialization: member.specialization || '',
             contact: member.contact || '',
-            passport: member.passport || ''
+            passport: member.passport || '',
+            courses: member.courses || '',
+            status: member.status || 'Active'
         });
         setShowModal(true);
     };
 
     const resetForm = () => {
         setFormData({
-            name: '', email: '', department: '', position: '', specialization: '', contact: '', passport: ''
+            id: '', name: '', email: '', department: '', position: '', specialization: '', contact: '', passport: '', courses: '', status: 'Active'
         });
     };
 
@@ -205,66 +209,125 @@ export default function Faculty() {
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-maroon-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-maroon-800 border border-maroon-700/50 rounded-xl p-8 max-w-md w-full shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-gold-500">
-                                {editingFaculty ? 'Edit Faculty' : 'Add Faculty'}
-                            </h2>
-                            <button onClick={() => setShowModal(false)} className="p-2 hover:bg-maroon-700 rounded-full transition-colors">
-                                <X className="w-6 h-6 text-gold-500" />
+                <div className="fixed inset-0 bg-maroon-950/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
+                    <div className="bg-white border border-maroon/10 rounded-[2.5rem] p-10 max-w-2xl w-full shadow-3xl overflow-hidden relative">
+                        {/* Subtle patterns */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-maroon/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gold/5 rounded-full -ml-24 -mb-24 blur-3xl"></div>
+
+                        <div className="relative flex justify-between items-center mb-10">
+                            <div>
+                                <h2 className="text-2xl font-black text-maroon uppercase tracking-tight">
+                                    {editingFaculty ? 'Update Instructor' : 'Add Faculty member'}
+                                </h2>
+                                <p className="text-xs text-maroon/40 font-bold mt-1 uppercase tracking-widest">Academic Faculty Registry</p>
+                            </div>
+                            <button onClick={() => setShowModal(false)} className="p-2 hover:bg-parchment-100 rounded-full transition-colors">
+                                <X className="w-6 h-6 text-maroon/20" />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <input
-                                type="text"
-                                placeholder="Full Name"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full px-4 py-3 border border-maroon-700/50 rounded-lg bg-maroon-900/50 text-white placeholder-gold-500/30 focus:ring-2 focus:ring-gold-500 outline-none"
-                                required
-                            />
-                            <input
-                                type="email"
-                                placeholder="Email"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-4 py-3 border border-maroon-700/50 rounded-lg bg-maroon-900/50 text-white placeholder-gold-500/30 focus:ring-2 focus:ring-gold-500 outline-none"
-                                required
-                            />
-                            <select
-                                value={formData.department}
-                                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                                className="w-full px-4 py-3 border border-maroon-700/50 rounded-lg bg-maroon-900/50 text-white focus:ring-2 focus:ring-gold-500 outline-none"
-                                required
-                            >
-                                <option value="" className="bg-maroon-800">Select Department</option>
-                                {departments.map(dept => <option key={dept} value={dept} className="bg-maroon-800">{dept}</option>)}
-                            </select>
-                            <input
-                                type="text"
-                                placeholder="Position"
-                                value={formData.position}
-                                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                                className="w-full px-4 py-3 border border-maroon-700/50 rounded-lg bg-maroon-900/50 text-white placeholder-gold-500/30 focus:ring-2 focus:ring-gold-500 outline-none"
-                                required
-                            />
-                            <input
-                                type="text"
-                                placeholder="Specialization"
-                                value={formData.specialization}
-                                onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                                className="w-full px-4 py-3 border border-maroon-700/50 rounded-lg bg-maroon-900/50 text-white placeholder-gold-500/30 focus:ring-2 focus:ring-gold-500 outline-none"
-                            />
-                            <input
-                                type="text"
-                                placeholder="Passport Number"
-                                value={formData.passport}
-                                onChange={(e) => setFormData({ ...formData, passport: e.target.value })}
-                                className="w-full px-4 py-3 border border-maroon-700/50 rounded-lg bg-maroon-900/50 text-white placeholder-gold-500/30 focus:ring-2 focus:ring-gold-500 outline-none"
-                            />
-                            <button type="submit" className="w-full bg-gold-500 text-maroon-900 py-3 rounded-lg font-bold hover:bg-gold-400 transition-all shadow-lg mt-4">
-                                {editingFaculty ? 'Update' : 'Add'} Faculty
+                        <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Full Name</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Full Name"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Email address</label>
+                                    <input
+                                        type="email"
+                                        placeholder="Email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Department</label>
+                                    <select
+                                        value={formData.department}
+                                        onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold outline-none focus:ring-2 focus:ring-maroon/5"
+                                        required
+                                    >
+                                        <option value="">Select Department</option>
+                                        {departments.map(dept => <option key={dept} value={dept}>{dept}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Academic Position</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. Senior Lecturer"
+                                        value={formData.position}
+                                        onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Specialization</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. Advanced Cosmetology"
+                                        value={formData.specialization}
+                                        onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Contact number</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Contact"
+                                        value={formData.contact}
+                                        onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Passport Number</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Passport Number"
+                                        value={formData.passport}
+                                        onChange={(e) => setFormData({ ...formData, passport: e.target.value })}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Courses assigned</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. Cosmetology, Beauty Therapy"
+                                        value={formData.courses}
+                                        onChange={(e) => setFormData({ ...formData, courses: e.target.value })}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Employment Status</label>
+                                    <select
+                                        value={formData.status}
+                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold outline-none focus:ring-2 focus:ring-maroon/5"
+                                    >
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                        <option value="On Leave">On Leave</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" className="w-full bg-maroon text-gold py-6 rounded-[1.5rem] font-black text-sm uppercase tracking-[0.2em] hover:bg-elite-maroon shadow-xl transition-all mt-4 border border-gold/20">
+                                {editingFaculty ? 'Synchronize Record' : 'Enroll Faculty member'}
                             </button>
                         </form>
                     </div>

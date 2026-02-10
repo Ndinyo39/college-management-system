@@ -12,6 +12,7 @@ import * as sessionController from '../controllers/sessionController.js';
 import * as userController from '../controllers/userController.js';
 import * as reportController from '../controllers/reportController.js';
 import * as activityReportController from '../controllers/activityReportController.js';
+import * as settingsController from '../controllers/settingsController.js';
 import { authorizeRoles } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -34,11 +35,14 @@ router.get('/courses', authenticateToken, courseController.getAllCourses);
 router.get('/courses/:id', authenticateToken, courseController.getCourse);
 router.post('/courses', authenticateToken, courseController.createCourse);
 router.put('/courses/:id', authenticateToken, courseController.updateCourse);
+router.delete('/courses/:id', authenticateToken, courseController.deleteCourse);
 
 // Faculty routes (protected)
 router.get('/faculty', authenticateToken, facultyController.getAllFaculty);
 router.get('/faculty/:id', authenticateToken, facultyController.getFaculty);
 router.post('/faculty', authenticateToken, facultyController.createFaculty);
+router.put('/faculty/:id', authenticateToken, facultyController.updateFaculty);
+router.delete('/faculty/:id', authenticateToken, facultyController.deleteFaculty);
 
 // Attendance routes (protected)
 router.get('/attendance', authenticateToken, attendanceController.getAllAttendance);
@@ -103,5 +107,11 @@ router.delete('/activity-reports/monthly/:id', authenticateToken, authorizeRoles
 
 // Reports Summary
 router.get('/activity-reports/summary', authenticateToken, authorizeRoles('admin', 'superadmin'), activityReportController.getReportsSummary);
+
+
+// Settings Routes (Admin & Superadmin)
+router.get('/settings', authenticateToken, authorizeRoles('admin', 'superadmin'), settingsController.getSettings);
+router.put('/settings', authenticateToken, authorizeRoles('admin', 'superadmin'), settingsController.updateSettings);
+router.get('/settings/backup', authenticateToken, authorizeRoles('superadmin'), settingsController.downloadBackup);
 
 export default router;

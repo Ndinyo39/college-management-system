@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import { initializeDatabase } from './config/database.js';
+import { initializeDatabase, getDb } from './config/database.js';
 import apiRoutes from './routes/api.js';
 
 // Load environment variables
@@ -26,13 +26,25 @@ const allowedOrigins = [
 
 if (process.env.FRONTEND_URL) {
     allowedOrigins.push(process.env.FRONTEND_URL);
+    // Also allow potential Netlify subdomains or primary domains
+    if (process.env.FRONTEND_URL.includes('netlify.app')) {
+        const domain = process.env.FRONTEND_URL.split('//')[1];
+        allowedOrigins.push(`https://${domain}`);
+    }
 }
 
 app.use(cors({
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+
+        // If in development, allow all
+        if (process.env.NODE_ENV !== 'production') {
+            return callback(null, true);
+        }
+
+        // If in production, check against allowedOrigins
+        if (allowedOrigins.some(o => origin.startsWith(o))) {
             callback(null, true);
         } else {
             console.warn(`Blocked by CORS: ${origin}`);
@@ -64,26 +76,35 @@ app.use('/api', apiRoutes);
 // Database check route for debugging
 app.get('/api/db-check', async (req, res) => {
     try {
-        const db = await import('./config/database.js');
-        const userCount = await db.queryOne('SELECT COUNT(*) as count FROM users');
+        const db = await getDb();
+        const isMongo = db.constructor.name === 'NativeConnection';
+
+        if (isMongo) {
+            const User = (await import('./models/mongo/User.js')).default;
+            const userCount = await User.countDocuments();
+            return res.json({
+                status: '✅ Connected to MongoDB Atlas',
+                database: 'MongoDB',
+                users: userCount,
+                message: 'MongoDB is active.'
+            });
+        }
+
+        // SQLite Check
+        const userCount = await db.get('SELECT COUNT(*) as count FROM users');
         res.json({
-            status: '✅ Connected to Database',
-            database: process.env.DATABASE_URL ? 'PostgreSQL (Supabase)' : 'SQLite',
+            status: '✅ Connected to local SQLite',
+            database: 'SQLite',
             users: userCount.count,
-            message: 'If users is 0, you need to run the SQL in Supabase editor.'
+            message: 'SQLite is active. Vercel deployments require MongoDB or a cloud database.'
         });
+
     } catch (error) {
         console.error('❌ Database Check Failed:', error);
         res.status(500).json({
             status: '❌ Database Connection Failed',
             error: error.message,
-            stack: process.env.NODE_ENV === 'production' ? null : error.stack,
-            query: 'SELECT COUNT(*) FROM users',
-            env: {
-                hasDatabaseUrl: !!process.env.DATABASE_URL,
-                nodeEnv: process.env.NODE_ENV
-            },
-            note: 'Ensure you have set DATABASE_URL in Vercel and run the schema SQL in Supabase.'
+            stack: process.env.NODE_ENV === 'production' ? null : error.stack
         });
     }
 });

@@ -94,7 +94,7 @@ export default function Users() {
                             key={r}
                             onClick={() => setFilter(r)}
                             className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filter === r
-                                ? 'bg- gold text-maroon shadow-lg'
+                                ? 'bg-gold text-maroon shadow-lg'
                                 : 'text-maroon/40 hover:text-maroon hover:bg-maroon/5'
                                 }`}
                         >
@@ -137,10 +137,10 @@ export default function Users() {
                                     <div className="flex items-center gap-4">
                                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm shadow-inner ${u.role === 'superadmin' ? 'bg-gold text-maroon' : 'bg-white/10 text-white/40'
                                             }`}>
-                                            {u.email[0].toUpperCase()}
+                                            {(u.email?.[0] || 'U').toUpperCase()}
                                         </div>
                                         <div className="space-y-0.5">
-                                            <p className="text-sm font-black tracking-tight">{u.email}</p>
+                                            <p className="text-sm font-black tracking-tight">{u.email || 'No Email'}</p>
                                             <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest">ID: #{u.id}</p>
                                         </div>
                                     </div>

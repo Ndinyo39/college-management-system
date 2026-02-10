@@ -23,13 +23,18 @@ export default function Layout({ children }) {
 
     return (
         <div className="min-h-screen bg-[#FDFBFA] text-[#212121] transition-colors duration-500">
-            <Sidebar />
-            <div className="ml-64 relative min-h-screen flex flex-col">
-                <Navbar />
-                <main className="flex-1 p-10 pt-28">
+            <div className="print:hidden">
+                <Sidebar />
+            </div>
+            <div className="ml-64 relative min-h-screen flex flex-col print:ml-0">
+                <div className="print:hidden">
+                    <Navbar />
+                </div>
+                <main className="flex-1 p-10 pt-28 print:p-0 print:pt-4">
                     {children}
                 </main>
             </div>
         </div>
     );
+
 }

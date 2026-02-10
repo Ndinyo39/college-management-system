@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Users, BookOpen, UserCheck, TrendingUp, Zap, UserPlus, FileText, DollarSign, GraduationCap } from 'lucide-react';
 import { studentsAPI, coursesAPI, facultyAPI, reportsAPI } from '../services/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import TeacherDashboard from './TeacherDashboard';
@@ -29,13 +29,19 @@ function AdminDashboard() {
                 facultyAPI.getAll(),
                 reportsAPI.getAll({ limit: 5 })
             ]);
-            setStudents(studentsRes.data);
-            setCourses(coursesRes.data);
-            setRecentReports(reportsRes.data.slice(0, 5));
+
+            const studentsData = Array.isArray(studentsRes.data) ? studentsRes.data : [];
+            const coursesData = Array.isArray(coursesRes.data) ? coursesRes.data : [];
+            const facultyData = Array.isArray(facultyRes.data) ? facultyRes.data : [];
+            const reportsData = Array.isArray(reportsRes.data) ? reportsRes.data : [];
+
+            setStudents(studentsData);
+            setCourses(coursesData);
+            setRecentReports(reportsData.slice(0, 5));
             setStats({
-                students: studentsRes.data.length,
-                courses: coursesRes.data.length,
-                faculty: facultyRes.data.length,
+                students: studentsData.length,
+                courses: coursesData.length,
+                faculty: facultyData.length,
                 attendance: 92.4
             });
         } catch (error) {
@@ -121,10 +127,51 @@ function AdminDashboard() {
                     <ResponsiveContainer width="100%" height={320}>
                         <BarChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                            <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} font-weight="900" tickLine={false} axisLine={false} dy={10} />
-                            <YAxis stroke="#94a3b8" fontSize={10} font-weight="900" tickLine={false} axisLine={false} dx={-10} />
-                            <Tooltip cursor={{ fill: '#f8fafc' }} />
-                            <Bar dataKey="enrolled" fill="#800000" radius={[10, 10, 0, 0]} barSize={45} />
+                            <XAxis
+                                dataKey="name"
+                                stroke="#475569"
+                                fontSize={10}
+                                tick={{ fontWeight: 800 }}
+                                tickLine={false}
+                                axisLine={false}
+                                dy={10}
+                            />
+                            <YAxis
+                                stroke="#475569"
+                                fontSize={10}
+                                tick={{ fontWeight: 800 }}
+                                tickLine={false}
+                                axisLine={false}
+                                dx={-10}
+                            />
+                            <Tooltip
+                                cursor={{ fill: '#f1f5f9' }}
+                                contentStyle={{
+                                    borderRadius: '12px',
+                                    border: 'none',
+                                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                                    fontSize: '10px',
+                                    fontWeight: 'bold',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}
+                            />
+                            <Bar
+                                dataKey="enrolled"
+                                fill="#800000"
+                                radius={[6, 6, 0, 0]}
+                                barSize={40}
+                                activeBar={{ fill: '#FFD700', stroke: '#800000', strokeWidth: 1 }}
+                            >
+                                <LabelList
+                                    dataKey="enrolled"
+                                    position="top"
+                                    fill="#800000"
+                                    fontSize={10}
+                                    fontWeight="bold"
+                                    offset={10}
+                                />
+                            </Bar>
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

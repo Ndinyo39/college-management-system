@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FileText, Plus, Calendar, TrendingUp, BarChart3, X, Trash2, Edit } from 'lucide-react';
+import { FileText, Plus, Calendar, TrendingUp, BarChart3, X, Trash2, Edit, Printer } from 'lucide-react';
 import { activityReportsAPI } from '../services/api';
 
 export default function ActivityReports() {
@@ -265,17 +265,26 @@ export default function ActivityReports() {
                     <h1 className="text-3xl font-black text-gray-800 uppercase tracking-tighter">Activity Reports</h1>
                     <p className="text-sm text-gray-400 font-medium">College-Wide Operations Tracking</p>
                 </div>
-                <button
-                    onClick={openCreateModal}
-                    className="flex items-center gap-2 bg-maroon text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#600000] transition-all shadow-xl hover:-translate-y-1 active:scale-95"
-                >
-                    <Plus className="w-4 h-4" />
-                    New Report
-                </button>
+                <div className="flex gap-3 print:hidden">
+                    <button
+                        onClick={() => window.print()}
+                        className="flex items-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 transition-all shadow-sm"
+                    >
+                        <Printer className="w-4 h-4" />
+                        Print Reports
+                    </button>
+                    <button
+                        onClick={openCreateModal}
+                        className="flex items-center gap-2 bg-maroon text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#600000] transition-all shadow-xl hover:-translate-y-1 active:scale-95"
+                    >
+                        <Plus className="w-4 h-4" />
+                        New Report
+                    </button>
+                </div>
             </div>
 
             {/* Tabs */}
-            <div className="bg-white rounded-[2rem] p-2 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-[2rem] p-2 shadow-sm border border-gray-100 print:hidden">
                 <div className="flex gap-2">
                     {[
                         { id: 'daily', label: 'Daily Reports', icon: Calendar },
@@ -307,7 +316,7 @@ export default function ActivityReports() {
                     <p className="mt-4 text-sm font-bold text-gray-400">Loading reports...</p>
                 </div>
             ) : (
-                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
+                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 print:shadow-none print:border-none print:p-0">
                     {activeTab === 'daily' && (
                         <div className="space-y-4">
                             <h2 className="text-sm font-black text-gray-800 uppercase tracking-widest mb-6">Daily Activity Reports</h2>
@@ -321,7 +330,7 @@ export default function ActivityReports() {
                                                 <h3 className="font-black text-lg text-maroon">{new Date(report.report_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
                                                 <p className="text-xs text-gray-400 font-bold mt-1">Reported by {report.reported_by}</p>
                                             </div>
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-2 print:hidden">
                                                 <button
                                                     onClick={() => openEditModal(report)}
                                                     className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
@@ -393,7 +402,7 @@ export default function ActivityReports() {
                                                 </h3>
                                                 <p className="text-xs text-gray-400 font-bold mt-1">Reported by {report.reported_by}</p>
                                             </div>
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-2 print:hidden">
                                                 <button
                                                     onClick={() => openEditModal(report)}
                                                     className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
@@ -457,7 +466,7 @@ export default function ActivityReports() {
                                                 <h3 className="font-black text-lg text-maroon">{report.month}</h3>
                                                 <p className="text-xs text-gray-400 font-bold mt-1">Reported by {report.reported_by}</p>
                                             </div>
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-2 print:hidden">
                                                 <button
                                                     onClick={() => openEditModal(report)}
                                                     className="p-2 hover:bg-blue-50 rounded-lg transition-colors"

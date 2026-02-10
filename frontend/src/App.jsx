@@ -7,12 +7,12 @@ import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import Faculty from './pages/Faculty';
 import Courses from './pages/Courses';
+import Settings from './pages/Settings';
+import Users from './pages/Users';
 import Attendance from './pages/Attendance';
 import Grades from './pages/Grades';
 import Schedule from './pages/Schedule';
 import Announcements from './pages/Announcements';
-import Settings from './pages/Settings';
-import Users from './pages/Users';
 import AcademicReports from './pages/AcademicReports';
 import ActivityReports from './pages/ActivityReports';
 
@@ -37,14 +37,11 @@ function App() {
                 <BrowserRouter>
                     <Routes>
                         <Route path="/login" element={<Login />} />
+                        <Route path="/debug" element={<div className="p-10 text-green-600 font-bold">Debug Route Active</div>} />
 
                         <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
-
-                        {/* Admin Only Routes */}
                         <Route path="/students" element={<ProtectedRoute allowedRoles={['admin', 'superadmin']}><Layout><Students /></Layout></ProtectedRoute>} />
                         <Route path="/faculty" element={<ProtectedRoute allowedRoles={['admin', 'superadmin']}><Layout><Faculty /></Layout></ProtectedRoute>} />
-
-                        {/* Shared Routes */}
                         <Route path="/courses" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student', 'superadmin']}><Layout><Courses /></Layout></ProtectedRoute>} />
                         <Route path="/attendance" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student', 'superadmin']}><Layout><Attendance /></Layout></ProtectedRoute>} />
                         <Route path="/grades" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student', 'superadmin']}><Layout><Grades /></Layout></ProtectedRoute>} />
@@ -55,8 +52,8 @@ function App() {
                         <Route path="/reports" element={<ProtectedRoute allowedRoles={['teacher', 'admin', 'superadmin']}><Layout><AcademicReports /></Layout></ProtectedRoute>} />
                         <Route path="/activity-reports" element={<ProtectedRoute allowedRoles={['admin', 'superadmin']}><Layout><ActivityReports /></Layout></ProtectedRoute>} />
 
-                        <Route path="/" element={<Navigate to="/dashboard" />} />
-                        <Route path="*" element={<Navigate to="/dashboard" />} />
+                        <Route path="/" element={<Navigate to="/login" />} />
+                        <Route path="*" element={<Navigate to="/login" />} />
                     </Routes>
                 </BrowserRouter>
             </AuthProvider>

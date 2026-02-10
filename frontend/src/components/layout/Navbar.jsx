@@ -29,7 +29,10 @@ export default function Navbar() {
         navigate('/login');
     };
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+
+    // Ensure notifications is an array
+    const safeNotifications = Array.isArray(notifications) ? notifications : [];
+    const unreadCount = safeNotifications.filter(n => !n.read).length;
 
     return (
         <div className="h-20 bg-primary px-8 flex items-center justify-between fixed top-0 right-0 left-64 z-50 shadow-2xl">
@@ -61,7 +64,7 @@ export default function Navbar() {
                                 <span className="text-[9px] font-bold text-accent px-2 py-0.5 bg-primary/5 rounded-full">{unreadCount} New</span>
                             </div>
                             <div className="max-h-[300px] overflow-y-auto">
-                                {notifications.length > 0 ? notifications.map(n => (
+                                {safeNotifications.length > 0 ? safeNotifications.map(n => (
                                     <div key={n.id} className={`p-4 border-b border-primary/5 hover:bg-parchment transition-colors cursor-pointer ${n.read ? 'opacity-60' : ''}`}>
                                         <p className="text-[11px] font-black text-primary uppercase">{n.title}</p>
                                         <div className="flex justify-between items-center mt-1">

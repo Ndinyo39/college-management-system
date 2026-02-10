@@ -32,14 +32,16 @@ export default function Login() {
 
         if (role === 'superadmin') {
             demoEmail = 'superadmin@beautex.edu';
-            demoPassword = 'superadmin123';
+            demoPassword = 'admin123';
         } else if (role === 'admin') {
             demoEmail = 'admin@beautex.edu';
             demoPassword = 'admin123';
         } else if (role === 'teacher') {
             demoEmail = 'james.wilson@beautex.edu';
+            demoPassword = 'admin123';
         } else if (role === 'student') {
-            demoEmail = 'sarah.johnson@beautex.edu';
+            demoEmail = 'sarah.johnson0@beautex.edu';
+            demoPassword = 'admin123';
         }
 
         setEmail(demoEmail);

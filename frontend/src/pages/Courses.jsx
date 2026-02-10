@@ -9,7 +9,7 @@ export default function Courses() {
     const [showModal, setShowModal] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
     const [formData, setFormData] = useState({
-        name: '', department: '', instructor: '', duration: '', capacity: 30, room: '', schedule: '', status: 'Active'
+        id: '', name: '', department: '', instructor: '', duration: '', capacity: 30, room: '', schedule: '', status: 'Active'
     });
 
     const isStudent = user?.role === 'student';
@@ -51,7 +51,8 @@ export default function Courses() {
             if (editingCourse) {
                 await coursesAPI.update(editingCourse.id, formData);
             } else {
-                await coursesAPI.create(formData);
+                const newId = formData.id || `CRS-${Date.now().toString().slice(-6)}`;
+                await coursesAPI.create({ ...formData, id: newId });
             }
             setShowModal(false);
             fetchCourses();
@@ -80,7 +81,7 @@ export default function Courses() {
 
     const resetForm = () => {
         setFormData({
-            name: '', department: '', instructor: '', duration: '', capacity: 30, room: '', schedule: '', status: 'Active'
+            id: '', name: '', department: '', instructor: '', duration: '', capacity: 30, room: '', schedule: '', status: 'Active'
         });
         setEditingCourse(null);
     };
@@ -188,14 +189,26 @@ export default function Courses() {
                                 <X className="w-6 h-6 text-maroon/20" />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Course Code / ID</label>
+                                <input
+                                    type="text"
+                                    value={formData.id}
+                                    onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                                    placeholder="e.g. COS101"
+                                    required={!editingCourse}
+                                    disabled={!!editingCourse}
+                                />
+                            </div>
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Course Name</label>
                                 <input
                                     type="text"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-5 py-4 bg-parchment-100 border-none rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/10"
+                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
                                     placeholder="e.g. Cyber Security"
                                     required
                                 />
@@ -207,7 +220,7 @@ export default function Courses() {
                                         type="text"
                                         value={formData.duration}
                                         onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                                        className="w-full px-5 py-4 bg-parchment-100 border-none rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/10"
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
                                         placeholder="6 Months"
                                         required
                                     />
@@ -218,18 +231,62 @@ export default function Courses() {
                                         type="number"
                                         value={formData.capacity}
                                         onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
-                                        className="w-full px-5 py-4 bg-parchment-100 border-none rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/10"
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
                                         placeholder="30"
                                         required
                                     />
                                 </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Room / Lab</label>
+                                    <input
+                                        type="text"
+                                        value={formData.room}
+                                        onChange={(e) => setFormData({ ...formData, room: e.target.value })}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                                        placeholder="Room 101"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Status</label>
+                                    <select
+                                        value={formData.status}
+                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold outline-none focus:ring-2 focus:ring-maroon/5"
+                                    >
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Schedule</label>
+                                <input
+                                    type="text"
+                                    value={formData.schedule}
+                                    onChange={(e) => setFormData({ ...formData, schedule: e.target.value })}
+                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                                    placeholder="Mon, Wed, Fri 9:00-11:00 AM"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Instructor</label>
+                                <input
+                                    type="text"
+                                    value={formData.instructor}
+                                    onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
+                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                                    placeholder="Prof. John Doe"
+                                    required
+                                />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Department</label>
                                 <select
                                     value={formData.department}
                                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                                    className="w-full px-5 py-4 bg-parchment-100 border-none rounded-2xl text-maroon font-bold outline-none focus:ring-2 focus:ring-maroon/10"
+                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold outline-none focus:ring-2 focus:ring-maroon/5"
                                     required
                                 >
                                     <option value="">Select Department</option>
@@ -237,7 +294,7 @@ export default function Courses() {
                                 </select>
                             </div>
                             <button type="submit" className="w-full bg-maroon text-gold py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] hover:bg-elite-maroon shadow-xl transition-all mt-4 border border-gold/20">
-                                {editingCourse ? 'Save curriculum' : 'Announce Program'}
+                                {editingCourse ? 'Synchronize Curriculum' : 'Release Program'}
                             </button>
                         </form>
                     </div>

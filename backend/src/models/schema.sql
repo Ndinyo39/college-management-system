@@ -309,3 +309,24 @@ CREATE TABLE IF NOT EXISTS monthly_summary_reports (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(month_start_date, month_end_date)
 );
+
+-- System Settings table
+CREATE TABLE IF NOT EXISTS system_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default settings
+INSERT OR IGNORE INTO system_settings (key, value) VALUES 
+('college_name', 'Beautex Technical College'),
+('college_abbr', 'BTC'),
+('academic_year', '2025/2026'),
+('semester', 'Semester 1'),
+('contact_email', 'admin@beautex.edu'),
+('maintenance_mode', 'false'),
+('student_portal_enabled', 'true'),
+('teacher_portal_enabled', 'true'),
+('parent_portal_enabled', 'true'),
+('allow_registration', 'true'),
+('grading_system', 'standard');

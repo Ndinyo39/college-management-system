@@ -71,19 +71,41 @@ export async function getDb() {
     return db;
 }
 
-// Initialize database schema (Only for SQLite)
+// Initialize database schema
 export async function initializeDatabase() {
+    const database = await getDb();
+    const schemaFile = path.join(__dirname, '../models/schema.sql');
+    let schema = fs.readFileSync(schemaFile, 'utf-8');
+
     if (MONGODB_URI) {
         console.log('ℹ️ MongoDB detected. Schemas are handled by Mongoose models.');
         return;
     }
+
     if (DATABASE_URL) {
-        console.log('ℹ️ Skipping auto-initialization for PostgreSQL. Use the Supabase SQL editor.');
+        console.log('🐘 Initializing PostgreSQL schema...');
+        // Basic SQLite -> Postgres translations for our schema
+        schema = schema
+            .replace(/INTEGER PRIMARY KEY AUTOINCREMENT/gi, 'SERIAL PRIMARY KEY')
+            .replace(/DATETIME DEFAULT CURRENT_TIMESTAMP/gi, 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
+            .replace(/INSERT OR IGNORE/gi, 'INSERT') // We'll handle conflicts differently if needed
+            .replace(/PRAGMA foreign_keys = ON;/gi, ''); // Not needed in Postgres
+
+        // Split schema into individual statements (basic split by ;)
+        const statements = schema.split(';').filter(s => s.trim().length > 0);
+        for (let statement of statements) {
+            try {
+                await database.query(statement);
+            } catch (err) {
+                // Ignore "already exists" errors
+                if (!err.message.includes('already exists') && !err.message.includes('already a primary key')) {
+                    console.warn(`⚠️ Postgres Init Warning: ${err.message}`);
+                }
+            }
+        }
+        console.log('✅ PostgreSQL Schema checked/initialized');
         return;
     }
-
-    const database = await getDb();
-    const schema = fs.readFileSync(path.join(__dirname, '../models/schema.sql'), 'utf-8');
 
     try {
         await database.exec(schema);
@@ -129,11 +151,20 @@ export async function queryOne(sql, params = []) {
 export async function run(sql, params = []) {
     const database = await getDb();
     if (DATABASE_URL) {
-        let paramCount = 0;
-        const pgSql = sql.replace(/\?/g, () => {
-            paramCount++;
-            return `$${paramCount}`;
+        let pgSql = sql.replace(/\?/g, (_, i, s) => {
+            // Very basic param counting
+            const count = (s.slice(0, i).match(/\?/g) || []).length + 1;
+            return `$${count}`;
         });
+
+        // Dialect translation for common seed/crud patterns
+        pgSql = pgSql.replace(/INSERT OR IGNORE INTO/gi, 'INSERT INTO');
+        if (sql.toLowerCase().includes('insert into users')) {
+            pgSql += ' ON CONFLICT (email) DO NOTHING';
+        } else if (sql.toLowerCase().includes('students') || sql.toLowerCase().includes('courses') || sql.toLowerCase().includes('faculty')) {
+            pgSql += ' ON CONFLICT (id) DO NOTHING';
+        }
+
         const result = await database.query(pgSql, params);
         return { lastID: null, changes: result.rowCount };
     }

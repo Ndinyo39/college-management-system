@@ -1,11 +1,10 @@
-import { getDb, initializeDatabase } from '../config/database.js';
+import { run, query, queryOne, initializeDatabase } from '../config/database.js';
 import bcrypt from 'bcryptjs';
 
 const hashedPassword = await bcrypt.hash('admin123', 10);
 
 async function seed() {
     await initializeDatabase();
-    const db = await getDb();
 
     console.log('🌱 Starting database seeding...\n');
 
@@ -13,16 +12,16 @@ async function seed() {
         // Clear existing data
         console.log('🗑️  Clearing existing data...');
         await db.run('DELETE FROM attendance');
-        await db.run('DELETE FROM grades');
-        await db.run('DELETE FROM trainer_reports');
-        await db.run('DELETE FROM daily_activity_reports');
-        await db.run('DELETE FROM weekly_summary_reports');
-        await db.run('DELETE FROM monthly_summary_reports');
-        await db.run('DELETE FROM students');
-        await db.run('DELETE FROM faculty');
-        await db.run('DELETE FROM announcements');
-        await db.run('DELETE FROM sessions');
-        await db.run('DELETE FROM users WHERE email != "admin@beautex.edu"');
+        await run('DELETE FROM grades');
+        await run('DELETE FROM trainer_reports');
+        await run('DELETE FROM daily_activity_reports');
+        await run('DELETE FROM weekly_summary_reports');
+        await run('DELETE FROM monthly_summary_reports');
+        await run('DELETE FROM students');
+        await run('DELETE FROM faculty');
+        await run('DELETE FROM announcements');
+        await run('DELETE FROM sessions');
+        await run('DELETE FROM users WHERE email != "admin@beautex.edu"');
 
         // Seed Users
         console.log('👥 Seeding users...');
@@ -35,7 +34,7 @@ async function seed() {
         ];
 
         for (const user of users) {
-            await db.run(
+            await run(
                 'INSERT OR IGNORE INTO users (email, password, role, status) VALUES (?, ?, ?, ?)',
                 [user.email, user.password, user.role, 'Active']
             );
@@ -76,7 +75,7 @@ async function seed() {
                 enrolled_date: enrollDate
             });
 
-            await db.run(
+            await run(
                 `INSERT INTO students (id, name, email, course, semester, gpa, status, contact, enrolled_date, dob, address) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [studentId, `${firstName} ${lastName}`, email, course, semester, gpa, status, contact, enrollDate,
@@ -86,7 +85,7 @@ async function seed() {
 
             // Create user account for student
             if (status === 'Active') {
-                await db.run(
+                await run(
                     'INSERT OR IGNORE INTO users (email, password, role, status) VALUES (?, ?, ?, ?)',
                     [email, hashedPassword, 'student', 'Active']
                 );
@@ -107,13 +106,13 @@ async function seed() {
         ];
 
         for (const f of faculty) {
-            await db.run(
+            await run(
                 'INSERT INTO faculty (id, name, email, department, courses, contact, passport, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                 [f.id, f.name, f.email, f.department, f.courses, f.contact, f.passport, 'Active']
             );
 
             // Create user account for faculty
-            await db.run(
+            await run(
                 'INSERT OR IGNORE INTO users (email, password, role, status) VALUES (?, ?, ?, ?)',
                 [f.email, hashedPassword, 'teacher', 'Active']
             );
@@ -143,7 +142,7 @@ async function seed() {
                     const status = attendanceStatuses[Math.floor(Math.random() * attendanceStatuses.length)];
 
                     try {
-                        await db.run(
+                        await run(
                             'INSERT INTO attendance (student_id, course, date, status) VALUES (?, ?, ?, ?)',
                             [student.id, student.course, dateStr, status]
                         );
@@ -167,7 +166,7 @@ async function seed() {
                     const maxScore = 100;
                     const score = Math.floor(50 + Math.random() * 50); // 50-100
 
-                    await db.run(
+                    await run(
                         'INSERT INTO grades (student_id, course, assignment, score, max_score) VALUES (?, ?, ?, ?, ?)',
                         [student.id, student.course, assignment, score, maxScore]
                     );
@@ -189,7 +188,7 @@ async function seed() {
         ];
 
         for (const announcement of announcements) {
-            await db.run(
+            await run(
                 'INSERT INTO announcements (title, content, author, category, priority, date) VALUES (?, ?, ?, ?, ?, ?)',
                 [announcement.title, announcement.content, announcement.author, announcement.category, announcement.priority, announcement.date]
             );
@@ -216,7 +215,7 @@ async function seed() {
         ];
 
         for (const session of sessions) {
-            await db.run(
+            await run(
                 'INSERT INTO sessions (day, time, course, room, instructor, teacher_email) VALUES (?, ?, ?, ?, ?, ?)',
                 [session.day, session.time, session.course, session.room, session.instructor, session.teacher_email]
             );
@@ -233,7 +232,7 @@ async function seed() {
             const facultyMember = faculty[Math.floor(Math.random() * faculty.length)];
             const period = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'January 2026', 'February 2026'][Math.floor(Math.random() * 6)];
 
-            await db.run(
+            await run(
                 `INSERT INTO trainer_reports (
                     student_id, student_name, registration_number, course_unit, trainer_name, trainer_email,
                     reporting_period, total_lessons, attended_lessons, attendance_percentage,
@@ -265,7 +264,7 @@ async function seed() {
 
             if (dayOfWeek === 0 || dayOfWeek === 6) continue; // Skip weekends
 
-            await db.run(
+            await run(
                 `INSERT INTO daily_activity_reports (
                     report_date, reported_by, classes_conducted, total_attendance_percentage,
                     assessments_conducted, total_students_present, total_students_absent,
@@ -293,7 +292,7 @@ async function seed() {
             const endDate = new Date(startDate);
             endDate.setDate(endDate.getDate() + 4); // Friday
 
-            await db.run(
+            await run(
                 `INSERT INTO weekly_summary_reports (
                     week_start_date, week_end_date, reported_by, total_classes_conducted,
                     average_attendance, total_assessments, active_students,
@@ -314,7 +313,7 @@ async function seed() {
         }
 
         // Monthly Report (January 2026)
-        await db.run(
+        await run(
             `INSERT INTO monthly_summary_reports (
                 month, month_start_date, month_end_date, reported_by, total_students,
                 new_enrollments, graduations, dropouts, total_classes, average_attendance,
@@ -336,16 +335,16 @@ async function seed() {
         console.log('\n✅ Database seeding completed successfully!');
         console.log('\n📊 Summary:');
         const counts = {
-            students: await db.get('SELECT COUNT(*) as count FROM students'),
-            faculty: await db.get('SELECT COUNT(*) as count FROM faculty'),
-            attendance: await db.get('SELECT COUNT(*) as count FROM attendance'),
-            grades: await db.get('SELECT COUNT(*) as count FROM grades'),
-            announcements: await db.get('SELECT COUNT(*) as count FROM announcements'),
-            sessions: await db.get('SELECT COUNT(*) as count FROM sessions'),
-            trainer_reports: await db.get('SELECT COUNT(*) as count FROM trainer_reports'),
-            daily_reports: await db.get('SELECT COUNT(*) as count FROM daily_activity_reports'),
-            weekly_reports: await db.get('SELECT COUNT(*) as count FROM weekly_summary_reports'),
-            monthly_reports: await db.get('SELECT COUNT(*) as count FROM monthly_summary_reports')
+            students: await queryOne('SELECT COUNT(*) as count FROM students'),
+            faculty: await queryOne('SELECT COUNT(*) as count FROM faculty'),
+            attendance: await queryOne('SELECT COUNT(*) as count FROM attendance'),
+            grades: await queryOne('SELECT COUNT(*) as count FROM grades'),
+            announcements: await queryOne('SELECT COUNT(*) as count FROM announcements'),
+            sessions: await queryOne('SELECT COUNT(*) as count FROM sessions'),
+            trainer_reports: await queryOne('SELECT COUNT(*) as count FROM trainer_reports'),
+            daily_reports: await queryOne('SELECT COUNT(*) as count FROM daily_activity_reports'),
+            weekly_reports: await queryOne('SELECT COUNT(*) as count FROM weekly_summary_reports'),
+            monthly_reports: await queryOne('SELECT COUNT(*) as count FROM monthly_summary_reports')
         };
 
         console.log(`   Students: ${counts.students.count}`);

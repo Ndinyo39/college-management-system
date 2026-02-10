@@ -53,6 +53,13 @@ export async function getDb() {
         const sqlite3 = (await import('sqlite3')).default;
         const { open } = await import('sqlite');
 
+        // Ensure directory exists for DB_PATH
+        const dbDir = path.dirname(dbPath);
+        if (!fs.existsSync(dbDir)) {
+            console.log(`📁 Creating missing database directory: ${dbDir}`);
+            fs.mkdirSync(dbDir, { recursive: true });
+        }
+
         db = await open({
             filename: dbPath,
             driver: sqlite3.Database

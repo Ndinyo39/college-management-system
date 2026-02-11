@@ -1,4 +1,4 @@
-import { getDb } from '../config/database.js';
+import { getDb, query, queryOne, run } from '../config/database.js';
 
 async function isMongo() {
     const db = await getDb();
@@ -13,8 +13,7 @@ export async function getAllSessions(req, res) {
             return res.json(sessions);
         }
 
-        const db = await getDb();
-        const sessions = await db.all('SELECT * FROM sessions ORDER BY day, time');
+        const sessions = await query('SELECT * FROM sessions ORDER BY day, time');
         res.json(sessions);
     } catch (error) {
         console.error('Get sessions error:', error);
@@ -33,12 +32,11 @@ export async function createSession(req, res) {
             return res.status(201).json(saved);
         }
 
-        const db = await getDb();
-        const result = await db.run(
+        await run(
             'INSERT INTO sessions (day, time, course, room, instructor, teacher_email) VALUES (?, ?, ?, ?, ?, ?)',
             [day, time, course, room, instructor, teacher_email]
         );
-        const session = await db.get('SELECT * FROM sessions WHERE id = ?', [result.lastID]);
+        const session = await queryOne('SELECT * FROM sessions WHERE day = ? AND time = ? AND course = ? LIMIT 1', [day, time, course]);
         res.status(201).json(session);
     } catch (error) {
         console.error('Create session error:', error);
@@ -55,8 +53,7 @@ export async function deleteSession(req, res) {
             return res.json({ message: 'Session deleted successfully' });
         }
 
-        const db = await getDb();
-        const result = await db.run('DELETE FROM sessions WHERE id = ?', [req.params.id]);
+        const result = await run('DELETE FROM sessions WHERE id = ?', [req.params.id]);
         if (result.changes === 0) return res.status(404).json({ error: 'Session not found' });
         res.json({ message: 'Session deleted successfully' });
     } catch (error) {

@@ -22,87 +22,89 @@ api.interceptors.request.use((config) => {
 export const authAPI = {
     login: (email, password) => api.post('auth/login', { email, password }),
     register: (email, password, role) => api.post('auth/register', { email, password, role }),
+    forgotPassword: (data) => api.post('auth/forgot-password', data),
+    resetPassword: (data) => api.post('auth/reset-password', data),
     getMe: () => api.get('auth/me'),
 };
 
 // Students
 export const studentsAPI = {
     getAll: () => api.get('students'),
-    getById: (id) => api.get(`students/${id}`),
+    getById: (id) => api.get(`students/${encodeURIComponent(id)}`),
     create: (data) => api.post('students', data),
-    update: (id, data) => api.put(`students/${id}`, data),
-    delete: (id) => api.delete(`students/${id}`),
+    update: (id, data) => api.put(`students/${encodeURIComponent(id)}`, data),
+    delete: (id) => api.delete(`students/${encodeURIComponent(id)}`),
     search: (query) => api.get(`students/search?q=${query}`),
 };
 
 // Courses
 export const coursesAPI = {
     getAll: () => api.get('courses'),
-    getById: (id) => api.get(`courses/${id}`),
+    getById: (id) => api.get(`courses/${encodeURIComponent(id)}`),
     create: (data) => api.post('courses', data),
-    update: (id, data) => api.put(`courses/${id}`, data),
+    update: (id, data) => api.put(`courses/${encodeURIComponent(id)}`, data),
 };
 
 // Faculty
 export const facultyAPI = {
     getAll: () => api.get('faculty'),
-    getById: (id) => api.get(`faculty/${id}`),
+    getById: (id) => api.get(`faculty/${encodeURIComponent(id)}`),
     create: (data) => api.post('faculty', data),
-    update: (id, data) => api.put(`faculty/${id}`, data),
-    delete: (id) => api.delete(`faculty/${id}`),
+    update: (id, data) => api.put(`faculty/${encodeURIComponent(id)}`, data),
+    delete: (id) => api.delete(`faculty/${encodeURIComponent(id)}`),
 };
 
 // Attendance
 export const attendanceAPI = {
     getAll: (course, date) => api.get('attendance', { params: { course, date } }),
     mark: (data) => api.post('attendance', data),
-    update: (id, data) => api.put(`attendance/${id}`, data),
+    update: (id, data) => api.put(`attendance/${encodeURIComponent(id)}`, data),
 };
 
 // Grades
 export const gradesAPI = {
     getAll: (course) => api.get('grades', { params: { course } }),
     create: (data) => api.post('grades', data),
-    update: (id, data) => api.put(`grades/${id}`, data),
-    delete: (id) => api.delete(`grades/${id}`),
+    update: (id, data) => api.put(`grades/${encodeURIComponent(id)}`, data),
+    delete: (id) => api.delete(`grades/${encodeURIComponent(id)}`),
 };
 
 // Announcements
 export const announcementsAPI = {
     getAll: (category, priority) => api.get('announcements', { params: { category, priority } }),
     create: (data) => api.post('announcements', data),
-    update: (id, data) => api.put(`announcements/${id}`, data),
-    delete: (id) => api.delete(`announcements/${id}`),
+    update: (id, data) => api.put(`announcements/${encodeURIComponent(id)}`, data),
+    delete: (id) => api.delete(`announcements/${encodeURIComponent(id)}`),
 };
 
 // Notifications
 export const notificationsAPI = {
     getAll: () => api.get('notifications'),
-    markRead: (id) => api.put(`notifications/${id}/read`),
+    markRead: (id) => api.put(`notifications/${encodeURIComponent(id)}/read`),
 };
 
 // Sessions (Schedule)
 export const sessionsAPI = {
     getAll: () => api.get('sessions'),
     create: (data) => api.post('sessions', data),
-    delete: (id) => api.delete(`sessions/${id}`),
+    delete: (id) => api.delete(`sessions/${encodeURIComponent(id)}`),
 };
 
 // Users (Superadmin Only)
 export const usersAPI = {
     getAll: () => api.get('users'),
-    updateRole: (id, role) => api.put(`users/${id}/role`, { role }),
-    updateStatus: (id, status) => api.put(`users/${id}/status`, { status }),
-    resetPassword: (id, newPassword) => api.put(`users/${id}/password`, { newPassword }),
-    delete: (id) => api.delete(`users/${id}`),
+    updateRole: (id, role) => api.put(`users/${encodeURIComponent(id)}/role`, { role }),
+    updateStatus: (id, status) => api.put(`users/${encodeURIComponent(id)}/status`, { status }),
+    resetPassword: (id, newPassword) => api.put(`users/${encodeURIComponent(id)}/password`, { newPassword }),
+    delete: (id) => api.delete(`users/${encodeURIComponent(id)}`),
 };
 
 // Academic Reports
 export const reportsAPI = {
     getAll: (params) => api.get('reports', { params }),
-    getStudentReports: (studentId) => api.get(`reports/student/${studentId}`),
+    getStudentReports: (studentId) => api.get(`reports/student/${encodeURIComponent(studentId)}`),
     create: (data) => api.post('reports', data),
-    delete: (id) => api.delete(`reports/${id}`),
+    delete: (id) => api.delete(`reports/${encodeURIComponent(id)}`),
 };
 
 // Activity Reports (College-wide)

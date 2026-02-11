@@ -17,10 +17,32 @@ export default function Login() {
         setLoading(true);
 
         try {
-            await login(email, password);
-            navigate('/dashboard');
+            const response = await login(email, password);
+            if (response?.requirePasswordChange) {
+                navigate('/change-password', { state: { email: response.user.email } });
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err) {
             setError(err.response?.data?.error || 'Invalid credentials');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleForgotPassword = async () => {
+        if (!email) {
+            setError('Please enter your email first to reset password');
+            return;
+        }
+        setError('');
+        setLoading(true);
+        try {
+            const { authAPI } = await import('../services/api');
+            const { data } = await authAPI.forgotPassword({ email });
+            alert(data.message || 'If an account exists, reset instructions have been sent.');
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to request password reset');
         } finally {
             setLoading(false);
         }
@@ -111,7 +133,13 @@ export default function Login() {
                                 <input type="checkbox" className="w-4 h-4 rounded border-gray-200 text-maroon focus:ring-maroon" />
                                 <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Remember me</span>
                             </label>
-                            <button type="button" className="text-[11px] font-bold text-maroon uppercase tracking-wider hover:underline">Forgot?</button>
+                            <button
+                                type="button"
+                                onClick={handleForgotPassword}
+                                className="text-[11px] font-bold text-maroon uppercase tracking-wider hover:underline"
+                            >
+                                Forgot?
+                            </button>
                         </div>
 
                         <button

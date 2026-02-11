@@ -1,4 +1,4 @@
-import { getDb } from '../config/database.js';
+import { getDb, query, queryOne, run } from '../config/database.js';
 
 async function isMongo() {
     const db = await getDb();
@@ -18,7 +18,6 @@ export const getAllReports = async (req, res) => {
             return res.json(reports);
         }
 
-        const db = await getDb();
         let sql = 'SELECT * FROM trainer_reports';
         let params = [];
 
@@ -31,7 +30,7 @@ export const getAllReports = async (req, res) => {
         }
         sql += ' ORDER BY created_at DESC';
 
-        const reports = await db.all(sql, params);
+        const reports = await query(sql, params);
         res.json(reports);
     } catch (error) {
         console.error('Error fetching reports:', error);
@@ -48,8 +47,7 @@ export const getStudentReports = async (req, res) => {
             return res.json(reports);
         }
 
-        const db = await getDb();
-        const reports = await db.all('SELECT * FROM trainer_reports WHERE student_id = ? ORDER BY created_at DESC', [studentId]);
+        const reports = await query('SELECT * FROM trainer_reports WHERE student_id = ? ORDER BY created_at DESC', [studentId]);
         res.json(reports);
     } catch (error) {
         console.error('Error fetching student reports:', error);
@@ -93,8 +91,7 @@ export const createReport = async (req, res) => {
             return res.status(201).json(savedReport);
         }
 
-        const db = await getDb();
-        const result = await db.run(
+        const result = await run(
             `INSERT INTO trainer_reports (
                 student_id, student_name, registration_number, course_unit,
                 trainer_name, trainer_email, reporting_period,
@@ -112,7 +109,21 @@ export const createReport = async (req, res) => {
                 discipline_issues, trainer_observations,
                 progress_summary, recommendation]
         );
-        const report = await db.get('SELECT * FROM trainer_reports WHERE id = ?', [result.lastID]);
+
+        // For Postgres/Supabase, we might not get lastID directly like SQLite.
+        // However, our `run` abstraction in database.js handles basic INSERTs.
+        // To be safe and compatible with both, we might want to fetch the latest report created by this user/student combo
+        // or rely on the `lastID` if the abstraction provides it (it does for SQLite, checks needed for PG).
+
+        // The `run` function in database.js for PG returns { lastID: null, changes: rowCount }.
+        // So we can't rely on `lastID` for PG.
+        // A better approach for cross-db compatibility without returning * from INSERT (which sqlite doesn't support easily in standard syntax)
+        // is to fetch the most recent report for this student/time.
+
+        const report = await queryOne(
+            'SELECT * FROM trainer_reports WHERE student_id = ? AND reporting_period = ? AND course_unit = ? ORDER BY created_at DESC LIMIT 1',
+            [student_id, reporting_period, course_unit]
+        );
         res.status(201).json(report);
     } catch (error) {
         console.error('Error creating report:', error);
@@ -134,13 +145,12 @@ export const deleteReport = async (req, res) => {
             return res.json({ message: 'Report deleted successfully' });
         }
 
-        const db = await getDb();
-        const report = await db.get('SELECT * FROM trainer_reports WHERE id = ?', [id]);
+        const report = await queryOne('SELECT * FROM trainer_reports WHERE id = ?', [id]);
         if (!report) return res.status(404).json({ error: 'Report not found' });
         if (req.user.role === 'teacher' && report.trainer_email !== req.user.email) {
             return res.status(403).json({ error: 'Forbidden: You can only delete your own reports' });
         }
-        await db.run('DELETE FROM trainer_reports WHERE id = ?', [id]);
+        await run('DELETE FROM trainer_reports WHERE id = ?', [id]);
         res.json({ message: 'Report deleted successfully' });
     } catch (error) {
         console.error('Error deleting report:', error);

@@ -7,9 +7,11 @@ import mongoose from 'mongoose';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = process.env.DB_PATH || path.join(__dirname, '../../database.sqlite');
-const DATABASE_URL = process.env.DATABASE_URL;
-const MONGODB_URI = process.env.MONGODB_URI;
+const getDbConfig = () => ({
+    dbPath: process.env.DB_PATH || path.join(__dirname, '../../database.sqlite'),
+    DATABASE_URL: process.env.DATABASE_URL,
+    MONGODB_URI: process.env.MONGODB_URI
+});
 
 const { Pool } = pg;
 
@@ -19,11 +21,13 @@ let mongoConnection;
 
 // Initialize database connection
 export async function getDb() {
+    const config = getDbConfig();
+
     // 1. Check for MongoDB Atlas (Priority)
-    if (MONGODB_URI) {
+    if (config.MONGODB_URI) {
         if (!mongoConnection) {
             try {
-                await mongoose.connect(MONGODB_URI);
+                await mongoose.connect(config.MONGODB_URI);
                 mongoConnection = mongoose.connection;
                 console.log('🍃 Connected to MongoDB Atlas');
             } catch (err) {
@@ -35,13 +39,15 @@ export async function getDb() {
     }
 
     // 2. Check for PostgreSQL (Supabase)
-    if (DATABASE_URL) {
+    if (config.DATABASE_URL) {
         if (!pgPool) {
-            pgPool = new Pool({
-                connectionString: DATABASE_URL,
-                ssl: {
-                    rejectUnauthorized: false
-                }
+            const { default: pg } = await import('pg'); // Dynamically import pg
+            pgPool = new pg.Pool({
+                connectionString: config.DATABASE_URL, // Corrected from dbConfig to config
+                ssl: { rejectUnauthorized: false }
+            });
+            pgPool.on('error', (err) => {
+                console.error('Unexpected error on idle client', err);
             });
             console.log('🐘 Connected to Supabase (PostgreSQL)');
         }
@@ -54,14 +60,14 @@ export async function getDb() {
         const { open } = await import('sqlite');
 
         // Ensure directory exists for DB_PATH
-        const dbDir = path.dirname(dbPath);
+        const dbDir = path.dirname(config.dbPath);
         if (!fs.existsSync(dbDir)) {
             console.log(`📁 Creating missing database directory: ${dbDir}`);
             fs.mkdirSync(dbDir, { recursive: true });
         }
 
         db = await open({
-            filename: dbPath,
+            filename: config.dbPath,
             driver: sqlite3.Database
         });
         // Enable foreign keys
@@ -74,32 +80,44 @@ export async function getDb() {
 // Initialize database schema
 export async function initializeDatabase() {
     const database = await getDb();
+    const config = getDbConfig();
     const schemaFile = path.join(__dirname, '../models/schema.sql');
     let schema = fs.readFileSync(schemaFile, 'utf-8');
 
-    if (MONGODB_URI) {
+    if (config.MONGODB_URI) {
         console.log('ℹ️ MongoDB detected. Schemas are handled by Mongoose models.');
         return;
     }
 
-    if (DATABASE_URL) {
+    if (config.DATABASE_URL) {
         console.log('🐘 Initializing PostgreSQL schema...');
         // Basic SQLite -> Postgres translations for our schema
         schema = schema
             .replace(/INTEGER PRIMARY KEY AUTOINCREMENT/gi, 'SERIAL PRIMARY KEY')
             .replace(/DATETIME DEFAULT CURRENT_TIMESTAMP/gi, 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
+            .replace(/DATETIME/gi, 'TIMESTAMP')
+            .replace(/date\('now'\)/gi, 'CURRENT_DATE')
+            .replace(/BOOLEAN DEFAULT 1/gi, 'BOOLEAN DEFAULT TRUE')
+            .replace(/BOOLEAN DEFAULT 0/gi, 'BOOLEAN DEFAULT FALSE')
             .replace(/INSERT OR IGNORE/gi, 'INSERT') // We'll handle conflicts differently if needed
             .replace(/PRAGMA foreign_keys = ON;/gi, ''); // Not needed in Postgres
 
-        // Split schema into individual statements (basic split by ;)
+        // Split schema into individual statements (basic split by ; but careful with multi-line)
         const statements = schema.split(';').filter(s => s.trim().length > 0);
         for (let statement of statements) {
             try {
-                await database.query(statement);
+                // If the statement contains a hash or similar with $, it might be interpreted as a placeholder
+                // We'll use a simple check and if it's a demo data insert, we'll try to execute it carefully
+                await database.query(statement.trim());
             } catch (err) {
                 // Ignore "already exists" errors
-                if (!err.message.includes('already exists') && !err.message.includes('already a primary key')) {
+                const errMsg = err.message.toLowerCase();
+                if (!errMsg.includes('already exists') &&
+                    !errMsg.includes('already a primary key') &&
+                    !errMsg.includes('duplicate key') &&
+                    !errMsg.includes('already been assigned')) {
                     console.warn(`⚠️ Postgres Init Warning: ${err.message}`);
+                    console.warn(`Statement prefix: ${statement.trim().substring(0, 50)}...`);
                 }
             }
         }
@@ -122,7 +140,8 @@ export async function initializeDatabase() {
 // Generic query functions (Will be bypassed by Mongoose models)
 export async function query(sql, params = []) {
     const database = await getDb();
-    if (DATABASE_URL) {
+    const config = getDbConfig();
+    if (config.DATABASE_URL) {
         let paramCount = 0;
         const pgSql = sql.replace(/\?/g, () => {
             paramCount++;
@@ -136,7 +155,8 @@ export async function query(sql, params = []) {
 
 export async function queryOne(sql, params = []) {
     const database = await getDb();
-    if (DATABASE_URL) {
+    const config = getDbConfig();
+    if (config.DATABASE_URL) {
         let paramCount = 0;
         const pgSql = sql.replace(/\?/g, () => {
             paramCount++;
@@ -150,7 +170,8 @@ export async function queryOne(sql, params = []) {
 
 export async function run(sql, params = []) {
     const database = await getDb();
-    if (DATABASE_URL) {
+    const config = getDbConfig();
+    if (config.DATABASE_URL) {
         let pgSql = sql.replace(/\?/g, (_, i, s) => {
             // Very basic param counting
             const count = (s.slice(0, i).match(/\?/g) || []).length + 1;
@@ -159,10 +180,15 @@ export async function run(sql, params = []) {
 
         // Dialect translation for common seed/crud patterns
         pgSql = pgSql.replace(/INSERT OR IGNORE INTO/gi, 'INSERT INTO');
-        if (sql.toLowerCase().includes('insert into users')) {
-            pgSql += ' ON CONFLICT (email) DO NOTHING';
-        } else if (sql.toLowerCase().includes('students') || sql.toLowerCase().includes('courses') || sql.toLowerCase().includes('faculty')) {
-            pgSql += ' ON CONFLICT (id) DO NOTHING';
+
+        // Append ON CONFLICT only for INSERT statements
+        if (pgSql.trim().toUpperCase().startsWith('INSERT')) {
+            const lowerPgSql = pgSql.toLowerCase();
+            if (lowerPgSql.includes('insert into users')) {
+                pgSql += ' ON CONFLICT (email) DO NOTHING';
+            } else if (lowerPgSql.includes('students') || lowerPgSql.includes('courses') || lowerPgSql.includes('faculty')) {
+                pgSql += ' ON CONFLICT (id) DO NOTHING';
+            }
         }
 
         const result = await database.query(pgSql, params);

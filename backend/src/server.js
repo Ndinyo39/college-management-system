@@ -2,11 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+
+// Load environment variables as first thing before internal modules
+dotenv.config();
+
 import { initializeDatabase, getDb } from './config/database.js';
 import apiRoutes from './routes/api.js';
-
-// Load environment variables
-dotenv.config();
 
 // Initialize Express app
 const app = express();
@@ -77,9 +78,9 @@ app.use('/api', apiRoutes);
 app.get('/api/db-check', async (req, res) => {
     try {
         const db = await getDb();
-        const isMongo = db.constructor.name === 'NativeConnection';
 
-        if (isMongo) {
+        // MongoDB Check
+        if (process.env.MONGODB_URI) {
             const User = (await import('./models/mongo/User.js')).default;
             const userCount = await User.countDocuments();
             return res.json({
@@ -87,6 +88,17 @@ app.get('/api/db-check', async (req, res) => {
                 database: 'MongoDB',
                 users: userCount,
                 message: 'MongoDB is active.'
+            });
+        }
+
+        // Supabase/Postgres Check
+        if (process.env.DATABASE_URL) {
+            const result = await db.query('SELECT COUNT(*) as count FROM users');
+            return res.json({
+                status: '✅ Connected to Supabase (PostgreSQL)',
+                database: 'PostgreSQL',
+                users: parseInt(result.rows[0].count),
+                message: 'Supabase is active.'
             });
         }
 

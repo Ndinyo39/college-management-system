@@ -93,7 +93,7 @@ export default function Courses() {
                     <h1 className="text-3xl font-black text-maroon tracking-tight uppercase">Courses</h1>
                     <p className="text-xs text-maroon/40 font-bold tracking-widest mt-1">Academic Programs & Curriculum</p>
                 </div>
-                {!isStudent && (
+                {(user?.role === 'admin' || user?.role === 'superadmin') && (
                     <button
                         onClick={() => { resetForm(); setShowModal(true); }}
                         className="bg-maroon text-gold px-8 py-3.5 rounded-2xl flex items-center gap-2 hover:bg-elite-maroon shadow-lg transition-all border border-gold/20 font-black text-xs uppercase tracking-widest"

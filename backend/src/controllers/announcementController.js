@@ -1,4 +1,4 @@
-import { getDb } from '../config/database.js';
+import { getDb, query, queryOne, run } from '../config/database.js';
 
 async function isMongo() {
     const db = await getDb();
@@ -13,8 +13,7 @@ export async function getAllAnnouncements(req, res) {
             return res.json(announcements);
         }
 
-        const db = await getDb();
-        const announcements = await db.all('SELECT * FROM announcements ORDER BY date DESC');
+        const announcements = await query('SELECT * FROM announcements ORDER BY date DESC');
         res.json(announcements);
     } catch (error) {
         console.error('Get announcements error:', error);
@@ -33,12 +32,11 @@ export async function createAnnouncement(req, res) {
             return res.status(201).json(saved);
         }
 
-        const db = await getDb();
-        const result = await db.run(
+        await run(
             'INSERT INTO announcements (title, content, author, category, priority, date) VALUES (?, ?, ?, ?, ?, ?)',
             [title, content, author, category, priority, date || new Date().toISOString().split('T')[0]]
         );
-        const announcement = await db.get('SELECT * FROM announcements WHERE id = ?', [result.lastID]);
+        const announcement = await queryOne('SELECT * FROM announcements WHERE title = ? AND author = ? ORDER BY date DESC LIMIT 1', [title, author]);
         res.status(201).json(announcement);
     } catch (error) {
         console.error('Create announcement error:', error);
@@ -55,14 +53,13 @@ export async function updateAnnouncement(req, res) {
             return res.json(updated);
         }
 
-        const db = await getDb();
         const fields = Object.keys(req.body);
         const setClause = fields.map(f => `${f} = ?`).join(', ');
         const values = fields.map(f => req.body[f]);
         values.push(req.params.id);
 
-        await db.run(`UPDATE announcements SET ${setClause} WHERE id = ?`, values);
-        const announcement = await db.get('SELECT * FROM announcements WHERE id = ?', [req.params.id]);
+        await run(`UPDATE announcements SET ${setClause} WHERE id = ?`, values);
+        const announcement = await queryOne('SELECT * FROM announcements WHERE id = ?', [req.params.id]);
         if (!announcement) return res.status(404).json({ error: 'Announcement not found' });
         res.json(announcement);
     } catch (error) {
@@ -80,8 +77,7 @@ export async function deleteAnnouncement(req, res) {
             return res.json({ message: 'Announcement deleted successfully' });
         }
 
-        const db = await getDb();
-        const result = await db.run('DELETE FROM announcements WHERE id = ?', [req.params.id]);
+        const result = await run('DELETE FROM announcements WHERE id = ?', [req.params.id]);
         if (result.changes === 0) return res.status(404).json({ error: 'Announcement not found' });
         res.json({ message: 'Announcement deleted successfully' });
     } catch (error) {

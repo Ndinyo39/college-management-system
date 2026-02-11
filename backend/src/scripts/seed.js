@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { run, query, queryOne, initializeDatabase } from '../config/database.js';
 import bcrypt from 'bcryptjs';
 
@@ -11,7 +12,7 @@ async function seed() {
     try {
         // Clear existing data
         console.log('🗑️  Clearing existing data...');
-        await db.run('DELETE FROM attendance');
+        await run('DELETE FROM attendance');
         await run('DELETE FROM grades');
         await run('DELETE FROM trainer_reports');
         await run('DELETE FROM daily_activity_reports');
@@ -21,7 +22,7 @@ async function seed() {
         await run('DELETE FROM faculty');
         await run('DELETE FROM announcements');
         await run('DELETE FROM sessions');
-        await run('DELETE FROM users WHERE email != "admin@beautex.edu"');
+        await run("DELETE FROM users WHERE email != 'admin@beautex.edu'");
 
         // Seed Users
         console.log('👥 Seeding users...');

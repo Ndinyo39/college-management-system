@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { getDb } from '../config/database.js';
+import { getDb, query, queryOne, run } from '../config/database.js';
 
 async function isMongo() {
     const db = await getDb();
@@ -14,8 +14,7 @@ export async function getAllUsers(req, res) {
             return res.json(users);
         }
 
-        const db = await getDb();
-        const users = await db.all('SELECT id, email, role, status FROM users ORDER BY email');
+        const users = await query('SELECT id, email, role, status FROM users ORDER BY email');
         res.json(users);
     } catch (error) {
         console.error('Get users error:', error);
@@ -34,9 +33,8 @@ export async function updateUserRole(req, res) {
             return res.json(user);
         }
 
-        const db = await getDb();
-        await db.run('UPDATE users SET role = ? WHERE id = ?', [role, req.params.id]);
-        const user = await db.get('SELECT id, email, role, status FROM users WHERE id = ?', [req.params.id]);
+        await run('UPDATE users SET role = ? WHERE id = ?', [role, req.params.id]);
+        const user = await queryOne('SELECT id, email, role, status FROM users WHERE id = ?', [req.params.id]);
         if (!user) return res.status(404).json({ error: 'User not found' });
         res.json(user);
     } catch (error) {
@@ -56,12 +54,11 @@ export async function toggleUserStatus(req, res) {
             return res.json({ id: user._id, email: user.email, role: user.role, status: user.status });
         }
 
-        const db = await getDb();
-        const user = await db.get('SELECT * FROM users WHERE id = ?', [req.params.id]);
+        const user = await queryOne('SELECT * FROM users WHERE id = ?', [req.params.id]);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
-        await db.run('UPDATE users SET status = ? WHERE id = ?', [newStatus, req.params.id]);
+        await run('UPDATE users SET status = ? WHERE id = ?', [newStatus, req.params.id]);
         res.json({ id: user.id, email: user.email, role: user.role, status: newStatus });
     } catch (error) {
         console.error('Toggle user status error:', error);
@@ -81,8 +78,7 @@ export async function resetUserPassword(req, res) {
             return res.json({ message: 'Password reset successfully' });
         }
 
-        const db = await getDb();
-        const result = await db.run('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, req.params.id]);
+        const result = await run('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, req.params.id]);
         if (result.changes === 0) return res.status(404).json({ error: 'User not found' });
         res.json({ message: 'Password reset successfully' });
     } catch (error) {
@@ -100,8 +96,7 @@ export async function deleteUser(req, res) {
             return res.json({ message: 'User deleted successfully' });
         }
 
-        const db = await getDb();
-        const result = await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
+        const result = await run('DELETE FROM users WHERE id = ?', [req.params.id]);
         if (result.changes === 0) return res.status(404).json({ error: 'User not found' });
         res.json({ message: 'User deleted successfully' });
     } catch (error) {

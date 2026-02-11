@@ -3,6 +3,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/layout/Layout';
 import Login from './pages/Login';
+import ResetPassword from './pages/ResetPassword';
+import ChangePassword from './pages/ChangePassword';
 import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import Faculty from './pages/Faculty';
@@ -37,6 +39,8 @@ function App() {
                 <BrowserRouter>
                     <Routes>
                         <Route path="/login" element={<Login />} />
+                        <Route path="/change-password" element={<ChangePassword />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/debug" element={<div className="p-10 text-green-600 font-bold">Debug Route Active</div>} />
 
                         <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />

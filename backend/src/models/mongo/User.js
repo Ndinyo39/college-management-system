@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema({
     created_at: {
         type: Date,
         default: Date.now
+    },
+    must_change_password: {
+        type: Boolean,
+        default: true
     }
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }

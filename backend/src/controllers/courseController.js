@@ -1,4 +1,4 @@
-import { getDb } from '../config/database.js';
+import { getDb, query, queryOne, run } from '../config/database.js';
 
 async function isMongo() {
     const db = await getDb();
@@ -13,9 +13,8 @@ export async function getAllCourses(req, res) {
             return res.json(courses);
         }
 
-        // SQLite: Get courses from courses table
-        const db = await getDb();
-        const courses = await db.all('SELECT * FROM courses WHERE status = "Active" ORDER BY name');
+        // Get courses from courses table (Postgres/SQLite)
+        const courses = await query("SELECT * FROM courses WHERE status = 'Active' ORDER BY name");
         res.json(courses);
     } catch (error) {
         console.error('Get courses error:', error);
@@ -32,8 +31,7 @@ export async function getCourse(req, res) {
             return res.json(course);
         }
 
-        const db = await getDb();
-        const course = await db.get('SELECT * FROM courses WHERE id = ?', [req.params.id]);
+        const course = await queryOne('SELECT * FROM courses WHERE id = ?', [req.params.id]);
         if (!course) return res.status(404).json({ error: 'Course not found' });
         res.json(course);
     } catch (error) {
@@ -44,16 +42,27 @@ export async function getCourse(req, res) {
 
 export async function createCourse(req, res) {
     try {
+        const { id, name, department, instructor, duration, capacity, schedule, room } = req.body;
+
+        if (!id || !name) {
+            return res.status(400).json({ error: 'Course ID and Name are required' });
+        }
+
         if (await isMongo()) {
             const Course = (await import('../models/mongo/Course.js')).default;
-            const { id, name, department, instructor, duration, capacity, schedule, room } = req.body;
             const newCourse = new Course({ id, name, department, instructor, duration, capacity, schedule, room });
             const savedCourse = await newCourse.save();
             return res.status(201).json(savedCourse);
         }
 
-        // SQLite doesn't have a courses table, return the request body as confirmation
-        res.status(201).json({ message: 'Course added (SQLite mode)', ...req.body });
+        // Use database abstraction for Postgres/SQLite
+        await run(
+            'INSERT INTO courses (id, name, department, instructor, duration, capacity, schedule, room, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, name, department, instructor, duration, capacity, schedule, room, 'Active']
+        );
+
+        const course = await queryOne('SELECT * FROM courses WHERE id = ?', [id]);
+        res.status(201).json(course);
     } catch (error) {
         console.error('Create course error:', error);
         res.status(500).json({ error: 'Failed to create course' });
@@ -73,7 +82,18 @@ export async function updateCourse(req, res) {
             return res.json(updatedCourse);
         }
 
-        res.json({ message: 'Course updated (SQLite mode)', id: req.params.id, ...req.body });
+        const fields = Object.keys(req.body).filter(k => k !== 'id');
+        if (fields.length === 0) return res.status(400).json({ error: 'No fields to update' });
+
+        const setClause = fields.map(f => `${f} = ?`).join(', ');
+        const values = fields.map(f => req.body[f]);
+        values.push(req.params.id);
+
+        await run(`UPDATE courses SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, values);
+
+        const course = await queryOne('SELECT * FROM courses WHERE id = ?', [req.params.id]);
+        if (!course) return res.status(404).json({ error: 'Course not found' });
+        res.json(course);
     } catch (error) {
         console.error('Update course error:', error);
         res.status(500).json({ error: 'Failed to update course' });
@@ -89,7 +109,9 @@ export async function deleteCourse(req, res) {
             return res.json({ message: 'Course deleted successfully' });
         }
 
-        res.json({ message: 'Course deleted (SQLite mode)' });
+        const result = await run('DELETE FROM courses WHERE id = ?', [req.params.id]);
+        if (result.changes === 0) return res.status(404).json({ error: 'Course not found' });
+        res.json({ message: 'Course deleted successfully' });
     } catch (error) {
         console.error('Delete course error:', error);
         res.status(500).json({ error: 'Failed to delete course' });

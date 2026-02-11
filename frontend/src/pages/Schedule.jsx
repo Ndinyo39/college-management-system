@@ -91,7 +91,7 @@ export default function Schedule() {
                         ))}
                     </div>
                 </div>
-                {user?.role === 'admin' && (
+                {(user?.role === 'admin' || user?.role === 'superadmin') && (
                     <button
                         onClick={() => setShowModal(true)}
                         className="bg-maroon text-gold px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:bg-elite-maroon transition-all"
@@ -135,7 +135,7 @@ export default function Schedule() {
                                                         <div className="flex items-center gap-1.5 text-[9px] text-gold/60 font-bold">
                                                             <Clock className="w-3 h-3 text-gold/40" /> {session.instructor}
                                                         </div>
-                                                        {user?.role === 'admin' && (
+                                                        {(user?.role === 'admin' || user?.role === 'superadmin') && (
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}
                                                                 className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-all"

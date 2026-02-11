@@ -1,4 +1,4 @@
-import { getDb } from '../config/database.js';
+import { getDb, query, queryOne, run } from '../config/database.js';
 
 async function isMongo() {
     const db = await getDb();
@@ -22,8 +22,7 @@ export const getAllDailyReports = async (req, res) => {
             return res.json({ success: true, data: reports });
         }
 
-        const db = await getDb();
-        const reports = await db.all('SELECT * FROM daily_activity_reports ORDER BY report_date DESC LIMIT 30');
+        const reports = await query('SELECT * FROM daily_activity_reports ORDER BY report_date DESC LIMIT 30');
         res.json({ success: true, data: reports });
     } catch (error) {
         console.error('Error fetching daily reports:', error);
@@ -41,8 +40,7 @@ export const getDailyReport = async (req, res) => {
             return res.json({ success: true, data: report });
         }
 
-        const db = await getDb();
-        const report = await db.get('SELECT * FROM daily_activity_reports WHERE report_date = ?', [date]);
+        const report = await queryOne('SELECT * FROM daily_activity_reports WHERE report_date = ?', [date]);
         if (!report) return res.status(404).json({ success: false, error: 'Report not found' });
         res.json({ success: true, data: report });
     } catch (error) {
@@ -61,13 +59,7 @@ export const createDailyReport = async (req, res) => {
             return res.status(201).json({ success: true, data: { id: savedReport._id } });
         }
 
-        const db = await getDb();
-        const { report_date, classes_conducted, total_attendance_percentage, assessments_conducted,
-            total_students_present, total_students_absent, late_arrivals, new_enrollments,
-            staff_present, staff_absent, facilities_issues, equipment_maintenance,
-            notable_events, incidents, achievements, additional_notes } = req.body;
-
-        const result = await db.run(
+        const result = await run(
             `INSERT INTO daily_activity_reports (report_date, reported_by, classes_conducted, total_attendance_percentage,
              assessments_conducted, total_students_present, total_students_absent, late_arrivals, new_enrollments,
              staff_present, staff_absent, facilities_issues, equipment_maintenance, notable_events, incidents, achievements, additional_notes)
@@ -93,12 +85,11 @@ export const updateDailyReport = async (req, res) => {
             return res.json({ success: true, message: 'Report updated successfully' });
         }
 
-        const db = await getDb();
         const fields = Object.keys(req.body).filter(k => k !== 'id');
         const setClause = fields.map(f => `${f} = ?`).join(', ');
         const values = fields.map(f => req.body[f]);
         values.push(id);
-        await db.run(`UPDATE daily_activity_reports SET ${setClause} WHERE id = ?`, values);
+        await run(`UPDATE daily_activity_reports SET ${setClause} WHERE id = ?`, values);
         res.json({ success: true, message: 'Report updated successfully' });
     } catch (error) {
         console.error('Error updating daily report:', error);
@@ -115,8 +106,7 @@ export const deleteDailyReport = async (req, res) => {
             return res.json({ success: true, message: 'Report deleted successfully' });
         }
 
-        const db = await getDb();
-        await db.run('DELETE FROM daily_activity_reports WHERE id = ?', [id]);
+        await run('DELETE FROM daily_activity_reports WHERE id = ?', [id]);
         res.json({ success: true, message: 'Report deleted successfully' });
     } catch (error) {
         console.error('Error deleting daily report:', error);
@@ -135,8 +125,7 @@ export const getAllWeeklyReports = async (req, res) => {
             return res.json({ success: true, data: reports });
         }
 
-        const db = await getDb();
-        const reports = await db.all('SELECT * FROM weekly_summary_reports ORDER BY week_start_date DESC LIMIT 20');
+        const reports = await query('SELECT * FROM weekly_summary_reports ORDER BY week_start_date DESC LIMIT 20');
         res.json({ success: true, data: reports });
     } catch (error) {
         console.error('Error fetching weekly reports:', error);
@@ -154,8 +143,7 @@ export const getWeeklyReport = async (req, res) => {
             return res.json({ success: true, data: report });
         }
 
-        const db = await getDb();
-        const report = await db.get('SELECT * FROM weekly_summary_reports WHERE id = ?', [id]);
+        const report = await queryOne('SELECT * FROM weekly_summary_reports WHERE id = ?', [id]);
         if (!report) return res.status(404).json({ success: false, error: 'Report not found' });
         res.json({ success: true, data: report });
     } catch (error) {
@@ -174,12 +162,7 @@ export const createWeeklyReport = async (req, res) => {
             return res.status(201).json({ success: true, data: { id: savedReport._id } });
         }
 
-        const db = await getDb();
-        const { week_start_date, week_end_date, total_classes_conducted, average_attendance, total_assessments,
-            active_students, avg_student_attendance, disciplinary_cases, courses_completed, new_enrollments,
-            key_achievements, challenges_faced, action_items, revenue_collected, notes } = req.body;
-
-        const result = await db.run(
+        const result = await run(
             `INSERT INTO weekly_summary_reports (week_start_date, week_end_date, reported_by, total_classes_conducted,
              average_attendance, total_assessments, active_students, avg_student_attendance, disciplinary_cases,
              courses_completed, new_enrollments, key_achievements, challenges_faced, action_items, revenue_collected, notes)
@@ -205,12 +188,11 @@ export const updateWeeklyReport = async (req, res) => {
             return res.json({ success: true, message: 'Report updated successfully' });
         }
 
-        const db = await getDb();
         const fields = Object.keys(req.body).filter(k => k !== 'id');
         const setClause = fields.map(f => `${f} = ?`).join(', ');
         const values = fields.map(f => req.body[f]);
         values.push(id);
-        await db.run(`UPDATE weekly_summary_reports SET ${setClause} WHERE id = ?`, values);
+        await run(`UPDATE weekly_summary_reports SET ${setClause} WHERE id = ?`, values);
         res.json({ success: true, message: 'Report updated successfully' });
     } catch (error) {
         console.error('Error updating weekly report:', error);
@@ -227,8 +209,7 @@ export const deleteWeeklyReport = async (req, res) => {
             return res.json({ success: true, message: 'Report deleted successfully' });
         }
 
-        const db = await getDb();
-        await db.run('DELETE FROM weekly_summary_reports WHERE id = ?', [id]);
+        await run('DELETE FROM weekly_summary_reports WHERE id = ?', [id]);
         res.json({ success: true, message: 'Report deleted successfully' });
     } catch (error) {
         console.error('Error deleting weekly report:', error);
@@ -247,8 +228,7 @@ export const getAllMonthlyReports = async (req, res) => {
             return res.json({ success: true, data: reports });
         }
 
-        const db = await getDb();
-        const reports = await db.all('SELECT * FROM monthly_summary_reports ORDER BY month_start_date DESC LIMIT 12');
+        const reports = await query('SELECT * FROM monthly_summary_reports ORDER BY month_start_date DESC LIMIT 12');
         res.json({ success: true, data: reports });
     } catch (error) {
         console.error('Error fetching monthly reports:', error);
@@ -266,8 +246,7 @@ export const getMonthlyReport = async (req, res) => {
             return res.json({ success: true, data: report });
         }
 
-        const db = await getDb();
-        const report = await db.get('SELECT * FROM monthly_summary_reports WHERE id = ?', [id]);
+        const report = await queryOne('SELECT * FROM monthly_summary_reports WHERE id = ?', [id]);
         if (!report) return res.status(404).json({ success: false, error: 'Report not found' });
         res.json({ success: true, data: report });
     } catch (error) {
@@ -286,13 +265,7 @@ export const createMonthlyReport = async (req, res) => {
             return res.status(201).json({ success: true, data: { id: savedReport._id } });
         }
 
-        const db = await getDb();
-        const { month, month_start_date, month_end_date, total_students, new_enrollments, graduations, dropouts,
-            total_classes, average_attendance, total_assessments, average_pass_rate, total_faculty, new_hires,
-            faculty_departures, revenue, expenses, major_achievements, challenges, strategic_initiatives,
-            goals_next_month, additional_notes } = req.body;
-
-        const result = await db.run(
+        const result = await run(
             `INSERT INTO monthly_summary_reports (month, month_start_date, month_end_date, reported_by, total_students,
              new_enrollments, graduations, dropouts, total_classes, average_attendance, total_assessments, average_pass_rate,
              total_faculty, new_hires, faculty_departures, revenue, expenses, major_achievements, challenges,
@@ -320,12 +293,11 @@ export const updateMonthlyReport = async (req, res) => {
             return res.json({ success: true, message: 'Report updated successfully' });
         }
 
-        const db = await getDb();
         const fields = Object.keys(req.body).filter(k => k !== 'id');
         const setClause = fields.map(f => `${f} = ?`).join(', ');
         const values = fields.map(f => req.body[f]);
         values.push(id);
-        await db.run(`UPDATE monthly_summary_reports SET ${setClause} WHERE id = ?`, values);
+        await run(`UPDATE monthly_summary_reports SET ${setClause} WHERE id = ?`, values);
         res.json({ success: true, message: 'Report updated successfully' });
     } catch (error) {
         console.error('Error updating monthly report:', error);
@@ -342,8 +314,7 @@ export const deleteMonthlyReport = async (req, res) => {
             return res.json({ success: true, message: 'Report deleted successfully' });
         }
 
-        const db = await getDb();
-        await db.run('DELETE FROM monthly_summary_reports WHERE id = ?', [id]);
+        await run('DELETE FROM monthly_summary_reports WHERE id = ?', [id]);
         res.json({ success: true, message: 'Report deleted successfully' });
     } catch (error) {
         console.error('Error deleting monthly report:', error);
@@ -367,11 +338,10 @@ export const getReportsSummary = async (req, res) => {
             });
         }
 
-        const db = await getDb();
-        const dailyCount = await db.get('SELECT COUNT(*) as count FROM daily_activity_reports');
-        const weeklyCount = await db.get('SELECT COUNT(*) as count FROM weekly_summary_reports');
-        const monthlyCount = await db.get('SELECT COUNT(*) as count FROM monthly_summary_reports');
-        const latestDaily = await db.get('SELECT * FROM daily_activity_reports ORDER BY report_date DESC LIMIT 1');
+        const dailyCount = await queryOne('SELECT COUNT(*) as count FROM daily_activity_reports');
+        const weeklyCount = await queryOne('SELECT COUNT(*) as count FROM weekly_summary_reports');
+        const monthlyCount = await queryOne('SELECT COUNT(*) as count FROM monthly_summary_reports');
+        const latestDaily = await queryOne('SELECT * FROM daily_activity_reports ORDER BY report_date DESC LIMIT 1');
 
         res.json({
             success: true,

@@ -20,29 +20,32 @@ const router = express.Router();
 // Auth routes (public)
 router.post('/auth/register', authController.register);
 router.post('/auth/login', authController.login);
+router.post('/auth/change-password', authController.changePassword);
+router.post('/auth/forgot-password', authController.forgotPassword);
+router.post('/auth/reset-password', authController.resetPassword);
 router.get('/auth/me', authenticateToken, authController.getMe);
 
 // Student routes (protected)
 router.get('/students', authenticateToken, studentController.getAllStudents);
 router.get('/students/search', authenticateToken, studentController.searchStudents);
 router.get('/students/:id', authenticateToken, studentController.getStudent);
-router.post('/students', authenticateToken, studentController.createStudent);
-router.put('/students/:id', authenticateToken, studentController.updateStudent);
-router.delete('/students/:id', authenticateToken, studentController.deleteStudent);
+router.post('/students', authenticateToken, authorizeRoles('admin', 'superadmin'), studentController.createStudent);
+router.put('/students/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), studentController.updateStudent);
+router.delete('/students/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), studentController.deleteStudent);
 
 // Course routes (protected)
 router.get('/courses', authenticateToken, courseController.getAllCourses);
 router.get('/courses/:id', authenticateToken, courseController.getCourse);
-router.post('/courses', authenticateToken, courseController.createCourse);
-router.put('/courses/:id', authenticateToken, courseController.updateCourse);
-router.delete('/courses/:id', authenticateToken, courseController.deleteCourse);
+router.post('/courses', authenticateToken, authorizeRoles('admin', 'superadmin'), courseController.createCourse);
+router.put('/courses/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), courseController.updateCourse);
+router.delete('/courses/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), courseController.deleteCourse);
 
 // Faculty routes (protected)
 router.get('/faculty', authenticateToken, facultyController.getAllFaculty);
 router.get('/faculty/:id', authenticateToken, facultyController.getFaculty);
-router.post('/faculty', authenticateToken, facultyController.createFaculty);
-router.put('/faculty/:id', authenticateToken, facultyController.updateFaculty);
-router.delete('/faculty/:id', authenticateToken, facultyController.deleteFaculty);
+router.post('/faculty', authenticateToken, authorizeRoles('admin', 'superadmin'), facultyController.createFaculty);
+router.put('/faculty/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), facultyController.updateFaculty);
+router.delete('/faculty/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), facultyController.deleteFaculty);
 
 // Attendance routes (protected)
 router.get('/attendance', authenticateToken, attendanceController.getAllAttendance);
@@ -57,9 +60,9 @@ router.delete('/grades/:id', authenticateToken, gradeController.deleteGrade);
 
 // Announcement routes (protected)
 router.get('/announcements', authenticateToken, announcementController.getAllAnnouncements);
-router.post('/announcements', authenticateToken, announcementController.createAnnouncement);
-router.put('/announcements/:id', authenticateToken, announcementController.updateAnnouncement);
-router.delete('/announcements/:id', authenticateToken, announcementController.deleteAnnouncement);
+router.post('/announcements', authenticateToken, authorizeRoles('admin', 'superadmin'), announcementController.createAnnouncement);
+router.put('/announcements/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), announcementController.updateAnnouncement);
+router.delete('/announcements/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), announcementController.deleteAnnouncement);
 
 // Notification routes (protected)
 router.get('/notifications', authenticateToken, notificationController.getAll);
@@ -67,8 +70,8 @@ router.put('/notifications/:id/read', authenticateToken, notificationController.
 
 // Session (Schedule) routes (protected)
 router.get('/sessions', authenticateToken, sessionController.getAllSessions);
-router.post('/sessions', authenticateToken, sessionController.createSession);
-router.delete('/sessions/:id', authenticateToken, sessionController.deleteSession);
+router.post('/sessions', authenticateToken, authorizeRoles('admin', 'superadmin'), sessionController.createSession);
+router.delete('/sessions/:id', authenticateToken, authorizeRoles('admin', 'superadmin'), sessionController.deleteSession);
 
 // User Management routes (Superadmin Only)
 router.get('/users', authenticateToken, authorizeRoles('superadmin'), userController.getAllUsers);

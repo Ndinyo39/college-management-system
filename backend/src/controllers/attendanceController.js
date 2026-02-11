@@ -1,4 +1,4 @@
-import { getDb } from '../config/database.js';
+import { getDb, query, queryOne, run } from '../config/database.js';
 
 async function isMongo() {
     const db = await getDb();
@@ -13,8 +13,7 @@ export async function getAllAttendance(req, res) {
             return res.json(attendance);
         }
 
-        const db = await getDb();
-        const attendance = await db.all('SELECT * FROM attendance ORDER BY date DESC LIMIT 1000');
+        const attendance = await query('SELECT * FROM attendance ORDER BY date DESC LIMIT 1000');
         res.json(attendance);
     } catch (error) {
         console.error('Get attendance error:', error);
@@ -33,12 +32,11 @@ export async function markAttendance(req, res) {
             return res.status(201).json(saved);
         }
 
-        const db = await getDb();
-        const result = await db.run(
+        await run(
             'INSERT INTO attendance (student_id, course, date, status) VALUES (?, ?, ?, ?)',
             [student_id, course, date, status]
         );
-        const attendance = await db.get('SELECT * FROM attendance WHERE id = ?', [result.lastID]);
+        const attendance = await queryOne('SELECT * FROM attendance WHERE student_id = ? AND date = ? AND course = ? LIMIT 1', [student_id, date, course]);
         res.status(201).json(attendance);
     } catch (error) {
         console.error('Mark attendance error:', error);
@@ -55,10 +53,9 @@ export async function updateAttendance(req, res) {
             return res.json(updated);
         }
 
-        const db = await getDb();
         const { status } = req.body;
-        await db.run('UPDATE attendance SET status = ? WHERE id = ?', [status, req.params.id]);
-        const attendance = await db.get('SELECT * FROM attendance WHERE id = ?', [req.params.id]);
+        await run('UPDATE attendance SET status = ? WHERE id = ?', [status, req.params.id]);
+        const attendance = await queryOne('SELECT * FROM attendance WHERE id = ?', [req.params.id]);
         if (!attendance) return res.status(404).json({ error: 'Attendance record not found' });
         res.json(attendance);
     } catch (error) {

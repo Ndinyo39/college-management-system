@@ -96,7 +96,7 @@ export default function Announcements() {
                     <h1 className="text-3xl font-black text-maroon tracking-tight uppercase">Announcements</h1>
                     <p className="text-xs text-maroon/40 font-bold tracking-widest mt-1">Official College Communications</p>
                 </div>
-                {user?.role === 'admin' && (
+                {(user?.role === 'admin' || user?.role === 'superadmin') && (
                     <button
                         onClick={() => { resetForm(); setShowModal(true); }}
                         className="bg-maroon text-gold px-8 py-3.5 rounded-2xl flex items-center gap-2 hover:bg-elite-maroon shadow-lg transition-all border border-gold/20 font-black text-xs uppercase tracking-widest"
@@ -126,7 +126,7 @@ export default function Announcements() {
                                     {announcement.date}
                                 </span>
                             </div>
-                            {user?.role === 'admin' && (
+                            {(user?.role === 'admin' || user?.role === 'superadmin') && (
                                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button onClick={() => handleEdit(announcement)} className="p-2 hover:bg-parchment-100 rounded-lg text-white/20 hover:text-white transition-all">
                                         <Edit className="w-4 h-4" />
@@ -150,8 +150,7 @@ export default function Announcements() {
                     </div>
                 ))}
             </div>
-
-            {showModal && (
+            {(showModal && (user?.role === 'admin' || user?.role === 'superadmin')) && (
                 <div className="fixed inset-0 bg-maroon-950/90 backdrop-blur-xl flex items-center justify-center p-4 z-50">
                     <div className="card-elite p-12 max-w-2xl w-full border border-gold/20 animate-in zoom-in-95 duration-300">
                         <div className="flex justify-between items-center mb-10">
@@ -217,9 +216,10 @@ export default function Announcements() {
                                 {editingAnnouncement ? 'Update Broadcast' : 'Execute Broadcast'}
                             </button>
                         </form>
-                    </div>
-                </div>
-            )}
-        </div>
+                    </div >
+                </div >
+            )
+            }
+        </div >
     );
 }

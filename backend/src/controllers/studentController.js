@@ -1,4 +1,8 @@
-import { getDb } from '../config/database.js';
+import { getDb, query, queryOne, run } from '../config/database.js';
+import { createUser } from './authController.js';
+import { sendWelcomeEmail } from '../services/emailService.js';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
 // Helper to check if using MongoDB
 async function isMongo() {
@@ -14,8 +18,7 @@ export async function getAllStudents(req, res) {
             return res.json(students);
         }
 
-        const db = await getDb();
-        const students = await db.all('SELECT * FROM students ORDER BY created_at DESC');
+        const students = await query('SELECT * FROM students ORDER BY created_at DESC');
         res.json(students);
     } catch (error) {
         console.error('Get students error:', error);
@@ -32,8 +35,7 @@ export async function getStudent(req, res) {
             return res.json(student);
         }
 
-        const db = await getDb();
-        const student = await db.get('SELECT * FROM students WHERE id = ?', [req.params.id]);
+        const student = await queryOne('SELECT * FROM students WHERE id = ?', [req.params.id]);
         if (!student) return res.status(404).json({ error: 'Student not found' });
         res.json(student);
     } catch (error) {
@@ -68,13 +70,34 @@ export async function createStudent(req, res) {
             return res.status(201).json(savedStudent);
         }
 
-        const db = await getDb();
-        await db.run(
+        await run(
             `INSERT INTO students (id, name, email, course, semester, gpa, status, contact, photo, enrolled_date, dob, address, guardian_name, guardian_contact, blood_group, completion_date)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [id, name, email, course, semester || '1st Semester', gpa || 0.0, status || 'Active', contact, photo, enrolled_date, dob, address, guardian_name, guardian_contact, blood_group, completion_date]
         );
-        const student = await db.get('SELECT * FROM students WHERE id = ?', [id]);
+
+        // Create User Account for the student
+        try {
+            // Check if user already exists
+            const existingUser = await queryOne('SELECT * FROM users WHERE email = ?', [email]);
+            if (!existingUser) {
+                const randomPassword = crypto.randomBytes(4).toString('hex'); // 8 char hex string
+                const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+                await createUser(email, hashedPassword, 'student');
+
+                // Send email
+                await sendWelcomeEmail(email, 'student', randomPassword);
+                console.log(`✅ User account created and email sent for student: ${email}`);
+            } else {
+                console.log(`ℹ️ User account already exists for student: ${email}`);
+            }
+        } catch (userError) {
+            console.error('Failed to create user account for student:', userError);
+            // Don't block student registration if user creation fails, but log it.
+        }
+
+        const student = await queryOne('SELECT * FROM students WHERE id = ?', [id]);
         res.status(201).json(student);
     } catch (error) {
         console.error('Create student error:', error);
@@ -98,16 +121,8 @@ export async function updateStudent(req, res) {
             return res.json(updatedStudent);
         }
 
-        const db = await getDb();
-        const fields = Object.keys(req.body).filter(k => k !== 'id');
-        if (fields.length === 0) return res.status(400).json({ error: 'No fields to update' });
-
-        const setClause = fields.map(f => `${f} = ?`).join(', ');
-        const values = fields.map(f => req.body[f]);
-        values.push(req.params.id);
-
-        await db.run(`UPDATE students SET ${setClause}, updated_at = datetime('now') WHERE id = ?`, values);
-        const student = await db.get('SELECT * FROM students WHERE id = ?', [req.params.id]);
+        await run(`UPDATE students SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, values);
+        const student = await queryOne('SELECT * FROM students WHERE id = ?', [req.params.id]);
         if (!student) return res.status(404).json({ error: 'Student not found' });
         res.json(student);
     } catch (error) {
@@ -125,8 +140,7 @@ export async function deleteStudent(req, res) {
             return res.json({ message: 'Student deleted successfully' });
         }
 
-        const db = await getDb();
-        const result = await db.run('DELETE FROM students WHERE id = ?', [req.params.id]);
+        const result = await run('DELETE FROM students WHERE id = ?', [req.params.id]);
         if (result.changes === 0) return res.status(404).json({ error: 'Student not found' });
         res.json({ message: 'Student deleted successfully' });
     } catch (error) {
@@ -148,8 +162,7 @@ export async function searchStudents(req, res) {
             return res.json(students);
         }
 
-        const db = await getDb();
-        const students = await db.all(
+        const students = await query(
             `SELECT * FROM students WHERE name LIKE ? OR email LIKE ? OR id LIKE ? OR course LIKE ? ORDER BY created_at DESC`,
             [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`]
         );

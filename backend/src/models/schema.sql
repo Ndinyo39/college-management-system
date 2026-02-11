@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   password TEXT NOT NULL,
   role TEXT NOT NULL CHECK(role IN ('superadmin', 'admin', 'teacher', 'student')),
   status TEXT DEFAULT 'Active' CHECK(status IN ('Active', 'Inactive')),
+  must_change_password BOOLEAN DEFAULT 1,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -63,6 +63,7 @@ export default function Faculty() {
             resetForm();
         } catch (error) {
             console.error('Error saving faculty:', error);
+            alert(error.response?.data?.error || 'Failed to save faculty record. Please check the console for details.');
         }
     };
 

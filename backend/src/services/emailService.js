@@ -40,8 +40,8 @@ export const sendWelcomeEmail = async (email, role, tempPassword) => {
             transporter = await createTransporter();
         }
 
-        const loginUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        console.log(`📧 Preparing email: From: ${process.env.SMTP_USER}, To: ${email}, Login: ${loginUrl}`);
+        const loginUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? 'https://college-management-system-gczq.vercel.app' : 'http://localhost:5173');
+        console.log(`📧 Dispatching email: To: ${email}, Login: ${loginUrl}, Mode: ${process.env.NODE_ENV}`);
 
         const info = await transporter.sendMail({
             from: `"Beautex Technical Training College" <${process.env.SMTP_USER}>`,

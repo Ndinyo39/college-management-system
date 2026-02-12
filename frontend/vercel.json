@@ -12,7 +12,7 @@
     "routes": [
         {
             "src": "/api/(.*)",
-            "dest": "https://backend-molp8r3ae-douglasndinyo5-8641s-projects.vercel.app/api/$1"
+            "dest": "https://college-management-system-u9b7.vercel.app/api/$1"
         },
         {
             "handle": "filesystem"

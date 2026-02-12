@@ -104,11 +104,16 @@ app.get('/', (req, res) => {
 app.get('/api/diag/smtp', async (req, res) => {
     try {
         const { sendWelcomeEmail } = await import('./services/emailService.js');
+        const { getDb } = await import('./config/database.js');
         const testEmail = req.query.email || process.env.SMTP_USER;
+
+        const db = await getDb();
+        const dbType = db.constructor.name === 'NativeConnection' ? 'MongoDB' : (process.env.DATABASE_URL ? 'PostgreSQL' : 'SQLite');
 
         if (!testEmail) {
             return res.status(400).json({
                 error: 'No test email provided',
+                db_type: dbType,
                 smtp_user_set: !!process.env.SMTP_USER,
                 smtp_pass_set: !!process.env.SMTP_PASS
             });
@@ -120,9 +125,10 @@ app.get('/api/diag/smtp', async (req, res) => {
         res.json({
             success,
             recipient: testEmail,
+            db_type: dbType,
             smtp_config: {
                 user: process.env.SMTP_USER ? `${process.env.SMTP_USER.slice(0, 3)}...` : 'NOT SET',
-                pass_length: process.env.SMTP_PASS ? process.env.SMTP_PASS.length : 0,
+                from_address: process.env.SMTP_USER,
                 node_env: process.env.NODE_ENV
             }
         });

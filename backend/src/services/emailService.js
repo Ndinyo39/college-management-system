@@ -43,7 +43,7 @@ export const sendWelcomeEmail = async (email, role, tempPassword) => {
         const loginUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
         const info = await transporter.sendMail({
-            from: '"Beautex Technical Training College" <admin@beautex.edu>',
+            from: `"Beautex Technical Training College" <${process.env.SMTP_USER}>`,
             to: email,
             subject: 'Welcome to Beautex Technical Training College - Your Login Credentials',
             html: `
@@ -81,7 +81,7 @@ export const sendPasswordResetEmail = async (email, resetUrl) => {
         }
 
         const info = await transporter.sendMail({
-            from: '"Beautex Technical Training College" <admin@beautex.edu>',
+            from: `"Beautex Technical Training College" <${process.env.SMTP_USER}>`,
             to: email,
             subject: 'Reset Your Password - Beautex Technical Training College',
             html: `

@@ -129,20 +129,19 @@ export async function updateFaculty(req, res) {
     }
 }
 
-export async function deleteFaculty(req, res) {
-    try {
-        if (await isMongo()) {
-            const Faculty = (await import('../models/mongo/Faculty.js')).default;
-            const result = await Faculty.findOneAndDelete({ id: req.params.id });
-            if (!result) return res.status(404).json({ error: 'Faculty not found' });
-            return res.json({ message: 'Faculty deleted successfully' });
-        }
+const faculty = await queryOne('SELECT email FROM faculty WHERE id = ?', [req.params.id]);
+if (!faculty) return res.status(404).json({ error: 'Faculty not found' });
 
-        const result = await run('DELETE FROM faculty WHERE id = ?', [req.params.id]);
-        if (result.changes === 0) return res.status(404).json({ error: 'Faculty not found' });
-        res.json({ message: 'Faculty deleted successfully' });
+console.log(`🗑️ Deleting faculty member ${faculty.email} and their user account...`);
+
+// Delete linked user account
+await run('DELETE FROM users WHERE email = ?', [faculty.email]);
+
+const result = await run('DELETE FROM faculty WHERE id = ?', [req.params.id]);
+if (result.changes === 0) return res.status(404).json({ error: 'Faculty not found' });
+res.json({ message: 'Faculty and linked user account deleted successfully' });
     } catch (error) {
-        console.error('Delete faculty error:', error);
-        res.status(500).json({ error: 'Failed to delete faculty' });
-    }
+    console.error('Delete faculty error:', error);
+    res.status(500).json({ error: 'Failed to delete faculty' });
+}
 }

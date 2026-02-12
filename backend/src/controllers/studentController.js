@@ -131,21 +131,30 @@ export async function updateStudent(req, res) {
     }
 }
 
-const student = await queryOne('SELECT email FROM students WHERE id = ?', [req.params.id]);
-if (!student) return res.status(404).json({ error: 'Student not found' });
+export async function deleteStudent(req, res) {
+    try {
+        if (await isMongo()) {
+            const Student = (await import('../models/mongo/Student.js')).default;
+            const result = await Student.findOneAndDelete({ id: req.params.id });
+            if (!result) return res.status(404).json({ error: 'Student not found' });
+            return res.json({ message: 'Student deleted successfully' });
+        }
 
-console.log(`🗑️ Deleting student ${student.email} and their user account...`);
+        const student = await queryOne('SELECT email FROM students WHERE id = ?', [req.params.id]);
+        if (!student) return res.status(404).json({ error: 'Student not found' });
 
-// Delete linked user account
-await run('DELETE FROM users WHERE email = ?', [student.email]);
+        console.log(`🗑️ Deleting student ${student.email} and their user account...`);
 
-const result = await run('DELETE FROM students WHERE id = ?', [req.params.id]);
-if (result.changes === 0) return res.status(404).json({ error: 'Student not found' });
-res.json({ message: 'Student and linked user account deleted successfully' });
+        // Delete linked user account
+        await run('DELETE FROM users WHERE email = ?', [student.email]);
+
+        const result = await run('DELETE FROM students WHERE id = ?', [req.params.id]);
+        if (result.changes === 0) return res.status(404).json({ error: 'Student not found' });
+        res.json({ message: 'Student and linked user account deleted successfully' });
     } catch (error) {
-    console.error('Delete student error:', error);
-    res.status(500).json({ error: 'Failed to delete student' });
-}
+        console.error('Delete student error:', error);
+        res.status(500).json({ error: 'Failed to delete student' });
+    }
 }
 
 export async function searchStudents(req, res) {

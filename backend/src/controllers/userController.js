@@ -96,15 +96,19 @@ export async function deleteUser(req, res) {
             return res.json({ message: 'User deleted successfully' });
         }
 
-        console.log(`🗑️ Deletion request for user ID: ${req.params.id}`);
+        const user = await queryOne('SELECT email FROM users WHERE id = ?', [req.params.id]);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        console.log(`🗑️ Deletion request for user ID: ${req.params.id} (${user.email})`);
+
+        // Delete from all potential profile tables
+        await run('DELETE FROM students WHERE email = ?', [user.email]);
+        await run('DELETE FROM faculty WHERE email = ?', [user.email]);
+
         const result = await run('DELETE FROM users WHERE id = ?', [req.params.id]);
         console.log(`📊 Deletion result: ${JSON.stringify(result)}`);
 
-        if (result.changes === 0) {
-            console.log(`⚠️ User ${req.params.id} not found for deletion`);
-            return res.status(404).json({ error: 'User not found' });
-        }
-        res.json({ message: 'User deleted successfully' });
+        res.json({ message: 'User and all linked records deleted successfully' });
     } catch (error) {
         console.error('Delete user error:', error);
         res.status(500).json({ error: 'Failed to delete user' });

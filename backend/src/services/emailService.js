@@ -43,12 +43,12 @@ export const sendWelcomeEmail = async (email, role, tempPassword) => {
         const loginUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
         const info = await transporter.sendMail({
-            from: '"Beautex College" <admin@beautex.edu>',
+            from: '"Beautex Technical Training College" <admin@beautex.edu>',
             to: email,
-            subject: 'Welcome to Beautex College - Your Login Credentials',
+            subject: 'Welcome to Beautex Technical Training College - Your Login Credentials',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #4a154b;">Welcome to Beautex College</h2>
+                    <h2 style="color: #4a154b;">Welcome to Beautex Technical Training College</h2>
                     <p>Hello,</p>
                     <p>Your account has been created successfully. You can now access the ${role} portal.</p>
                     <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -81,9 +81,9 @@ export const sendPasswordResetEmail = async (email, resetUrl) => {
         }
 
         const info = await transporter.sendMail({
-            from: '"Beautex College" <admin@beautex.edu>',
+            from: '"Beautex Technical Training College" <admin@beautex.edu>',
             to: email,
-            subject: 'Reset Your Password - Beautex College',
+            subject: 'Reset Your Password - Beautex Technical Training College',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #4a154b;">Password Reset Request</h2>

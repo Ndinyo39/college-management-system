@@ -53,6 +53,8 @@ CREATE TABLE IF NOT EXISTS faculty (
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
   department TEXT NOT NULL,
+  position TEXT,
+  specialization TEXT,
   courses TEXT, -- JSON array of course names
   contact TEXT,
   passport TEXT, -- Passport number for trainers

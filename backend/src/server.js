@@ -86,7 +86,7 @@ app.use('/api', apiRoutes);
 // Root route
 app.get('/', (req, res) => {
     res.json({
-        message: 'Welcome to Beautex College Management System API',
+        message: 'Welcome to Beautex Technical Training College Management System API',
         version: '1.0.0',
         endpoints: {
             auth: '/api/auth/login',

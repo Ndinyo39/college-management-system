@@ -44,7 +44,7 @@ export default function Sidebar() {
                     <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden shadow-sm border border-gray-100">
                         <img src="/logo.jpg" alt="Beautex Logo" className="w-full h-full object-cover" />
                     </div>
-                    <span className="text-sm font-black text-maroon uppercase tracking-widest">Beautex CMS</span>
+                    <span className="text-sm font-black text-maroon uppercase tracking-widest">Beautex TTC</span>
                 </div>
             </div>
 

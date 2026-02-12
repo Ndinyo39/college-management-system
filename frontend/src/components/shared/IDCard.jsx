@@ -26,7 +26,7 @@ export default function IDCard({ data, role }) {
                     </div>
                     <div>
                         <h2 className="text-sm font-black text-gold uppercase tracking-[0.2em] leading-none mb-1">Beautex</h2>
-                        <p className="text-[7px] text-gold/60 font-bold uppercase tracking-[0.4em]">Elite Technical College</p>
+                        <p className="text-[7px] text-gold/60 font-bold uppercase tracking-[0.4em]">Technical Training College</p>
                     </div>
                 </div>
                 <div className="flex flex-col items-end">

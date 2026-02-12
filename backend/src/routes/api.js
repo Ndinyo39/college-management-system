@@ -84,6 +84,7 @@ router.delete('/users/:id', authenticateToken, authorizeRoles('superadmin'), use
 router.get('/reports', authenticateToken, authorizeRoles('teacher', 'admin', 'superadmin'), reportController.getAllReports);
 router.get('/reports/student/:studentId', authenticateToken, authorizeRoles('teacher', 'admin', 'superadmin', 'student'), reportController.getStudentReports);
 router.post('/reports', authenticateToken, authorizeRoles('teacher', 'admin', 'superadmin'), reportController.createReport);
+router.put('/reports/:id', authenticateToken, authorizeRoles('teacher', 'admin', 'superadmin'), reportController.updateReport);
 router.delete('/reports/:id', authenticateToken, authorizeRoles('teacher', 'admin', 'superadmin'), reportController.deleteReport);
 
 // Activity Reports (Admin/Superadmin Only)

@@ -1,10 +1,25 @@
 import 'dotenv/config';
-import { run, query, queryOne, initializeDatabase } from '../config/database.js';
+import { run, query, queryOne, initializeDatabase, getDb } from '../config/database.js';
 import bcrypt from 'bcryptjs';
 
 const hashedPassword = await bcrypt.hash('admin123', 10);
 
 async function seed() {
+    const db = await getDb();
+
+    // Drop tables to ensure schema changes are applied
+    console.log('🗑️  Dropping existing tables to apply schema updates...');
+    const tables = [
+        'attendance', 'grades', 'trainer_reports', 'sessions',
+        'daily_activity_reports', 'weekly_summary_reports', 'monthly_summary_reports',
+        'system_settings', 'announcements',
+        'students', 'courses', 'faculty', 'users'
+    ];
+
+    for (const table of tables) {
+        await run(`DROP TABLE IF EXISTS ${table}`);
+    }
+
     await initializeDatabase();
 
     console.log('🌱 Starting database seeding...\n');
@@ -47,14 +62,14 @@ async function seed() {
         const firstNames = ['Sarah', 'Michael', 'Emily', 'David', 'Jessica', 'James', 'Maria', 'John', 'Lisa', 'Robert', 'Jennifer', 'William', 'Linda', 'Richard', 'Patricia', 'Thomas', 'Nancy', 'Charles', 'Karen', 'Daniel', 'Susan', 'Matthew', 'Betty', 'Anthony', 'Margaret', 'Mark', 'Sandra', 'Donald', 'Ashley', 'Steven', 'Dorothy', 'Paul', 'Kimberly', 'Andrew', 'Emily', 'Joshua', 'Donna', 'Kenneth', 'Michelle', 'Kevin', 'Carol', 'Brian', 'Amanda', 'George', 'Melissa', 'Edward', 'Deborah', 'Ronald', 'Stephanie', 'Timothy'];
         const lastNames = ['Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores', 'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts', 'Gomez'];
         const statuses = ['Active', 'Active', 'Active', 'Active', 'Active', 'Inactive', 'Graduated'];
-        const semesters = ['1st Semester', '2nd Semester', '3rd Semester', '4th Semester', '5th Semester', '6th Semester'];
+        const intakes = ['January Intake', 'May Intake', 'September Intake'];
 
         const students = [];
         for (let i = 0; i < 50; i++) {
             const firstName = firstNames[i % firstNames.length];
             const lastName = lastNames[i % lastNames.length];
             const course = courses[Math.floor(Math.random() * courses.length)];
-            const semester = semesters[Math.floor(Math.random() * semesters.length)];
+            const intake = intakes[Math.floor(Math.random() * intakes.length)];
             const status = statuses[Math.floor(Math.random() * statuses.length)];
             const gpa = (2.5 + Math.random() * 1.5).toFixed(2);
             const studentId = `BT${2024}${String(i + 1).padStart(3, '0')}`;
@@ -69,7 +84,7 @@ async function seed() {
                 name: `${firstName} ${lastName}`,
                 email,
                 course,
-                semester,
+                intake,
                 gpa,
                 status,
                 contact,
@@ -77,9 +92,9 @@ async function seed() {
             });
 
             await run(
-                `INSERT INTO students (id, name, email, course, semester, gpa, status, contact, enrolled_date, dob, address) 
+                `INSERT INTO students (id, name, email, course, intake, gpa, status, contact, enrolled_date, dob, address) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [studentId, `${firstName} ${lastName}`, email, course, semester, gpa, status, contact, enrollDate,
+                [studentId, `${firstName} ${lastName}`, email, course, intake, gpa, status, contact, enrollDate,
                     `${Math.floor(Math.random() * 12) + 1990}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
                     `${Math.floor(Math.random() * 1000)} ${['Main St', 'Oak Ave', 'Maple Dr', 'Pine Rd', 'Cedar Ln'][Math.floor(Math.random() * 5)]}, Nairobi`]
             );
@@ -96,20 +111,20 @@ async function seed() {
         // Seed Faculty
         console.log('👨‍🏫 Seeding faculty...');
         const faculty = [
-            { id: 'FAC001', name: 'Dr. James Wilson', email: 'james.wilson@beautex.edu', department: 'Technology', courses: '["Computer Packages", "Cyber Security"]', contact: '+254 711 111 111', passport: 'A12345678' },
-            { id: 'FAC002', name: 'Prof. Sarah Anderson', email: 'sarah.anderson@beautex.edu', department: 'Beauty & Personal Care', courses: '["Cosmetology"]', contact: '+254 711 222 222', passport: 'B23456789' },
-            { id: 'FAC003', name: 'Dr. Emily Davis', email: 'emily.davis@beautex.edu', department: 'Beauty & Personal Care', courses: '["Beauty Therapy"]', contact: '+254 711 333 333', passport: 'C34567890' },
-            { id: 'FAC004', name: 'Chef Michael Brown', email: 'michael.brown@beautex.edu', department: 'Hospitality', courses: '["Catering"]', contact: '+254 711 444 444', passport: 'D45678901' },
-            { id: 'FAC005', name: 'Prof. David Chen', email: 'david.chen@beautex.edu', department: 'Technology', courses: '["Website Development"]', contact: '+254 711 555 555', passport: 'E56789012' },
-            { id: 'FAC006', name: 'Dr. Jennifer Park', email: 'jennifer.park@beautex.edu', department: 'Technology', courses: '["Cyber Security"]', contact: '+254 711 666 666', passport: 'F67890123' },
-            { id: 'FAC007', name: 'Ms. Grace Ndidi', email: 'grace.ndidi@beautex.edu', department: 'Beauty & Personal Care', courses: '["Cosmetology", "Beauty Therapy"]', contact: '+254 711 777 777', passport: 'G78901234' },
-            { id: 'FAC008', name: 'Mr. Peter Kamau', email: 'peter.kamau@beautex.edu', department: 'Hospitality', courses: '["Catering"]', contact: '+254 711 888 888', passport: 'H89012345' }
+            { id: 'FAC001', name: 'Dr. James Wilson', email: 'james.wilson@beautex.edu', department: 'Technology', position: 'Senior Lecturer', specialization: 'Cyber Security', courses: '["Computer Packages", "Cyber Security"]', contact: '+254 711 111 111', id_number: 'ID123456', status: 'Active' },
+            { id: 'FAC002', name: 'Prof. Sarah Anderson', email: 'sarah.anderson@beautex.edu', department: 'Beauty & Personal Care', position: 'Professor', specialization: 'Cosmetology', courses: '["Cosmetology"]', contact: '+254 711 222 222', id_number: 'ID234567', status: 'Active' },
+            { id: 'FAC003', name: 'Dr. Emily Davis', email: 'emily.davis@beautex.edu', department: 'Beauty & Personal Care', position: 'Lecturer', specialization: 'Beauty Therapy', courses: '["Beauty Therapy"]', contact: '+254 711 333 333', id_number: 'ID345678', status: 'Active' },
+            { id: 'FAC004', name: 'Chef Michael Brown', email: 'michael.brown@beautex.edu', department: 'Hospitality', position: 'Head Chef Instructor', specialization: 'Catering', courses: '["Catering"]', contact: '+254 711 444 444', id_number: 'ID456789', status: 'Active' },
+            { id: 'FAC005', name: 'Prof. David Chen', email: 'david.chen@beautex.edu', department: 'Technology', position: 'Associate Professor', specialization: 'Web Development', courses: '["Website Development"]', contact: '+254 711 555 555', id_number: 'ID567890', status: 'Active' },
+            { id: 'FAC006', name: 'Dr. Jennifer Park', email: 'jennifer.park@beautex.edu', department: 'Technology', position: 'Lecturer', specialization: 'Cyber Security', courses: '["Cyber Security"]', contact: '+254 711 666 666', id_number: 'ID678901', status: 'Active' },
+            { id: 'FAC007', name: 'Ms. Grace Ndidi', email: 'grace.ndidi@beautex.edu', department: 'Beauty & Personal Care', position: 'Instructor', specialization: 'Cosmetology & Beauty Therapy', courses: '["Cosmetology", "Beauty Therapy"]', contact: '+254 711 777 777', id_number: 'ID789012', status: 'Active' },
+            { id: 'FAC008', name: 'Mr. Peter Kamau', email: 'peter.kamau@beautex.edu', department: 'Hospitality', position: 'Instructor', specialization: 'Catering', courses: '["Catering"]', contact: '+254 711 888 888', id_number: 'ID890123', status: 'Active' }
         ];
 
         for (const f of faculty) {
             await run(
-                'INSERT INTO faculty (id, name, email, department, courses, contact, passport, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                [f.id, f.name, f.email, f.department, f.courses, f.contact, f.passport, 'Active']
+                'INSERT INTO faculty (id, name, email, department, position, specialization, courses, contact, id_number, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [f.id, f.name, f.email, f.department, f.position, f.specialization, f.courses, f.contact, f.id_number, f.status]
             );
 
             // Create user account for faculty
@@ -178,14 +193,16 @@ async function seed() {
         // Seed Announcements
         console.log('📢 Seeding announcements...');
         const announcements = [
-            { title: 'Spring Semester Orientation', content: 'All new students must attend the orientation on February 15, 2026 at 9:00 AM in the Main Hall.', author: 'Admin User', category: 'General', priority: 'High', date: '2026-02-05' },
-            { title: 'Course Registration Deadline', content: 'Reminder: Course registration for the upcoming semester closes on February 20, 2026. Please ensure all forms are submitted.', author: 'Admin User', category: 'Academic', priority: 'High', date: '2026-02-06' },
+            { title: 'January Intake Orientation', content: 'All new students for the January intake must attend the orientation on February 15, 2026 at 9:00 AM in the Main Hall.', author: 'Admin User', category: 'General', priority: 'High', date: '2026-02-05' },
+            { title: 'Intake Registration Deadline', content: 'Reminder: Registration for the current intake closes on February 20, 2026. Please ensure all forms are submitted.', author: 'Admin User', category: 'Academic', priority: 'High', date: '2026-02-06' },
             { title: 'Library Hours Extended', content: 'The library will now be open until 10:00 PM on weekdays starting next week to support exam preparation.', author: 'Admin User', category: 'Facilities', priority: 'Medium', date: '2026-02-07' },
             { title: 'Career Fair Next Month', content: 'Mark your calendars! Our annual career fair will be held on March 15, 2026. Many employers will be attending.', author: 'Admin User', category: 'Events', priority: 'Medium', date: '2026-02-01' },
             { title: 'New Equipment Arrived', content: 'The Cosmetology department has received new professional-grade equipment. Training sessions will be held this week.', author: 'Admin User', category: 'Facilities', priority: 'Low', date: '2026-01-28' },
-            { title: 'Mid-Semester Exams Schedule', content: 'Mid-semester examinations will take place from February 24-28, 2026. Please check the notice board for your specific exam timetable.', author: 'Admin User', category: 'Academic', priority: 'High', date: '2026-02-08' },
+            { title: 'Periodic Assessments Schedule', content: 'Mid-intake examinations will take place from February 24-28, 2026. Please check the notice board for your specific exam timetable.', author: 'Admin User', category: 'Academic', priority: 'High', date: '2026-02-08' },
             { title: 'Health and Safety Training', content: 'Mandatory health and safety training for all Catering students this Friday at 2:00 PM.', author: 'Admin User', category: 'General', priority: 'High', date: '2026-02-03' },
-            { title: 'Sports Day Announcement', content: 'Annual college sports day scheduled for March 1, 2026. All students are encouraged to participate!', author: 'Admin User', category: 'Events', priority: 'Low', date: '2026-01-25' }
+            { title: 'Sports Day Announcement', content: 'Annual college sports day scheduled for March 1, 2026. All students are encouraged to participate!', author: 'Admin User', category: 'Events', priority: 'Low', date: '2026-01-25' },
+            { title: 'Graduation Gala Dinner', content: 'Tickets for the graduation gala dinner are now available at the finance office. Limited slots!', author: 'Admin User', category: 'Events', priority: 'Medium', date: '2026-02-10' },
+            { title: 'Student Portal Maintenance', content: 'The student portal will undergo scheduled maintenance this Sunday from midnight to 4:00 AM.', author: 'Admin User', category: 'General', priority: 'Medium', date: '2026-02-11' }
         ];
 
         for (const announcement of announcements) {

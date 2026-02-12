@@ -157,3 +157,48 @@ export const deleteReport = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+export const updateReport = async (req, res) => {
+    const { id } = req.params;
+    const reportData = req.body;
+
+    try {
+        if (await isMongo()) {
+            const TrainerReport = (await import('../models/mongo/TrainerReport.js')).default;
+            const report = await TrainerReport.findById(id);
+            if (!report) return res.status(404).json({ error: 'Report not found' });
+
+            if (req.user.role === 'teacher' && report.trainer_email !== req.user.email) {
+                return res.status(403).json({ error: 'Forbidden: You can only edit your own reports' });
+            }
+
+            const updatedReport = await TrainerReport.findByIdAndUpdate(
+                id,
+                { $set: { ...reportData, updated_at: new Date() } },
+                { new: true, runValidators: true }
+            );
+            return res.json(updatedReport);
+        }
+
+        const report = await queryOne('SELECT * FROM trainer_reports WHERE id = ?', [id]);
+        if (!report) return res.status(404).json({ error: 'Report not found' });
+
+        if (req.user.role === 'teacher' && report.trainer_email !== req.user.email) {
+            return res.status(403).json({ error: 'Forbidden: You can only edit your own reports' });
+        }
+
+        const fields = Object.keys(reportData).filter(k => !['id', 'created_at', 'updated_at', 'trainer_email', 'trainer_name'].includes(k));
+        if (fields.length === 0) return res.status(400).json({ error: 'No fields to update' });
+
+        const setClause = fields.map(f => `${f} = ?`).join(', ');
+        const values = fields.map(f => reportData[f]);
+        values.push(id);
+
+        await run(`UPDATE trainer_reports SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, values);
+        const updatedReport = await queryOne('SELECT * FROM trainer_reports WHERE id = ?', [id]);
+        res.json(updatedReport);
+    } catch (error) {
+        console.error('Error updating report:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

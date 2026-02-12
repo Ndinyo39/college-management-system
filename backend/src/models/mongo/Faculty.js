@@ -23,7 +23,7 @@ const facultySchema = new mongoose.Schema({
     },
     courses: [String], // Array of course names
     contact: String,
-    passport: String, // Passport number for trainers
+    id_number: String, // National ID number
     status: {
         type: String,
         enum: ['Active', 'Inactive'],

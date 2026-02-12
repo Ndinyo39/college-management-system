@@ -124,8 +124,8 @@ export default function StudentDashboard() {
                                             <p className="text-xs font-bold text-green-400 uppercase">Active</p>
                                         </div>
                                         <div>
-                                            <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Semester</p>
-                                            <p className="text-xs font-bold text-white uppercase">{studentProfile?.semester || 'N/A'}</p>
+                                            <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Intake</p>
+                                            <p className="text-xs font-bold text-white uppercase">{studentProfile?.intake || studentProfile?.semester || 'N/A'}</p>
                                         </div>
                                         <div>
                                             <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Progress</p>

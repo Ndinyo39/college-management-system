@@ -105,6 +105,7 @@ export const reportsAPI = {
     getAll: (params) => api.get('reports', { params }),
     getStudentReports: (studentId) => api.get(`reports/student/${encodeURIComponent(studentId)}`),
     create: (data) => api.post('reports', data),
+    update: (id, data) => api.put(`reports/${encodeURIComponent(id)}`, data),
     delete: (id) => api.delete(`reports/${encodeURIComponent(id)}`),
 };
 

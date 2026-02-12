@@ -10,7 +10,7 @@ export default function Faculty() {
     const [showProfile, setShowProfile] = useState(null);
     const [editingFaculty, setEditingFaculty] = useState(null);
     const [formData, setFormData] = useState({
-        id: '', name: '', email: '', department: '', position: '', specialization: '', contact: '', passport: '', courses: '', status: 'Active'
+        id: '', name: '', email: '', department: '', position: '', specialization: '', contact: '', id_number: '', courses: '', status: 'Active'
     });
     const [printingFaculty, setPrintingFaculty] = useState(null);
 
@@ -77,7 +77,7 @@ export default function Faculty() {
             position: member.position,
             specialization: member.specialization || '',
             contact: member.contact || '',
-            passport: member.passport || '',
+            id_number: member.id_number || '',
             courses: member.courses || '',
             status: member.status || 'Active'
         });
@@ -86,7 +86,7 @@ export default function Faculty() {
 
     const resetForm = () => {
         setFormData({
-            id: '', name: '', email: '', department: '', position: '', specialization: '', contact: '', passport: '', courses: '', status: 'Active'
+            id: '', name: '', email: '', department: '', position: '', specialization: '', contact: '', id_number: '', courses: '', status: 'Active'
         });
     };
 
@@ -101,117 +101,119 @@ export default function Faculty() {
     const departments = ['Cosmetology', 'Beauty Therapy', 'Catering', 'IT & Computer Science', 'Business'];
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex justify-between items-end">
-                <div>
-                    <h1 className="text-3xl font-black text-maroon tracking-tight uppercase">Faculty</h1>
-                    <p className="text-xs text-maroon/40 font-bold tracking-widest mt-1">Academic Instructors & Staff</p>
+        <div className="space-y-8">
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-black text-maroon tracking-tight uppercase">Faculty</h1>
+                        <p className="text-xs text-maroon/40 font-bold tracking-widest mt-1">Academic Instructors & Staff</p>
+                    </div>
+                    <button
+                        onClick={() => { resetForm(); setShowModal(true); }}
+                        className="w-full md:w-auto bg-maroon text-gold px-8 py-3.5 rounded-2xl flex items-center justify-center gap-2 hover:bg-elite-maroon shadow-lg transition-all border border-gold/20 font-black text-xs uppercase tracking-widest"
+                    >
+                        <Plus className="w-5 h-5" /> Add Faculty
+                    </button>
                 </div>
-                <button
-                    onClick={() => { resetForm(); setShowModal(true); }}
-                    className="bg-maroon text-gold px-8 py-3.5 rounded-2xl flex items-center gap-2 hover:bg-elite-maroon shadow-lg transition-all border border-gold/20 font-black text-xs uppercase tracking-widest"
-                >
-                    <Plus className="w-5 h-5" /> Add Faculty
-                </button>
-            </div>
 
-            {/* Filters & Search */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-2 card-light p-3 flex gap-4 items-center">
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-maroon/20" />
-                        <input
-                            type="text"
-                            placeholder="Find an instructor..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-parchment-100 rounded-xl text-sm font-medium text-maroon placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
-                        />
+                {/* Filters & Search */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-2 card-light p-3 flex flex-col sm:flex-row gap-4 items-center">
+                        <div className="flex-1 w-full relative">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-maroon/20" />
+                            <input
+                                type="text"
+                                placeholder="Find an instructor..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 bg-parchment-100 rounded-xl text-sm font-medium text-maroon placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
+                            />
+                        </div>
+                    </div>
+                    <div className="card-light p-3">
+                        <select className="w-full py-3 bg-parchment-100 border-none rounded-xl text-xs font-black uppercase tracking-widest text-maroon/60 px-4 focus:ring-2 focus:ring-maroon/5 outline-none">
+                            <option>All Departments</option>
+                            {departments.map(dept => <option key={dept}>{dept}</option>)}
+                        </select>
                     </div>
                 </div>
-                <div className="card-light p-3">
-                    <select className="w-full h-full bg-parchment-100 border-none rounded-xl text-xs font-black uppercase tracking-widest text-maroon/60 px-4 focus:ring-2 focus:ring-maroon/5 outline-none">
-                        <option>All Departments</option>
-                        {departments.map(dept => <option key={dept}>{dept}</option>)}
-                    </select>
-                </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {filteredFaculty.map((member) => (
-                    <div key={member.id} className="card-light p-8 hover:shadow-2xl hover:scale-[1.02] transition-all group overflow-hidden relative">
-                        {/* Subtle Background Pattern */}
-                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-maroon/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {filteredFaculty.map((member) => (
+                        <div key={member.id} className="card-light p-8 hover:shadow-2xl hover:scale-[1.02] transition-all group overflow-hidden relative">
+                            {/* Subtle Background Pattern */}
+                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-maroon/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-                        <div className="flex justify-between items-start mb-8">
-                            <div className="flex gap-6">
-                                <div className="w-20 h-20 bg-maroon rounded-[1.5rem] flex items-center justify-center text-gold text-2xl font-black shadow-xl group-hover:rotate-6 transition-transform">
-                                    {member.name.split(' ').map(n => n[0]).join('')}
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-black text-maroon tracking-tight">{member.name}</h3>
-                                    <p className="text-xs font-black text-maroon/40 uppercase tracking-widest mt-1">{member.role}</p>
-                                    <div className="mt-4 flex flex-wrap gap-2">
-                                        <span className="px-3 py-1 bg-parchment-100 text-[9px] font-black text-maroon uppercase tracking-widest rounded-lg border border-maroon/5">
-                                            {member.department}
-                                        </span>
-                                        <span className="px-3 py-1 bg-green-50 text-[9px] font-black text-green-700 uppercase tracking-widest rounded-lg">
-                                            {member.status}
-                                        </span>
+                            <div className="flex justify-between items-start mb-8">
+                                <div className="flex gap-6">
+                                    <div className="w-20 h-20 bg-maroon rounded-[1.5rem] flex items-center justify-center text-gold text-2xl font-black shadow-xl group-hover:rotate-6 transition-transform">
+                                        {member.name.split(' ').map(n => n[0]).join('')}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-maroon tracking-tight">{member.name}</h3>
+                                        <p className="text-xs font-black text-maroon/40 uppercase tracking-widest mt-1">{member.role}</p>
+                                        <div className="mt-4 flex flex-wrap gap-2">
+                                            <span className="px-3 py-1 bg-parchment-100 text-[9px] font-black text-maroon uppercase tracking-widest rounded-lg border border-maroon/5">
+                                                {member.department}
+                                            </span>
+                                            <span className="px-3 py-1 bg-green-50 text-[9px] font-black text-green-700 uppercase tracking-widest rounded-lg">
+                                                {member.status}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
+                                <div className="p-3 bg-parchment-100 rounded-xl border border-maroon/5">
+                                    <Mail className="w-4 h-4 text-maroon/20" />
+                                </div>
                             </div>
-                            <div className="p-3 bg-parchment-100 rounded-xl border border-maroon/5">
-                                <Mail className="w-4 h-4 text-maroon/20" />
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-2 gap-4 border-t border-maroon/5 pt-8">
-                            <div className="bg-parchment-100 p-4 rounded-2xl border border-maroon/5">
-                                <p className="text-[9px] font-black text-maroon/30 uppercase tracking-[0.2em] mb-1">Courses</p>
-                                <p className="text-lg font-black text-maroon">{member.courses}</p>
+                            <div className="grid grid-cols-2 gap-4 border-t border-maroon/5 pt-8">
+                                <div className="bg-parchment-100 p-4 rounded-2xl border border-maroon/5">
+                                    <p className="text-[9px] font-black text-maroon/30 uppercase tracking-[0.2em] mb-1">Courses</p>
+                                    <p className="text-lg font-black text-maroon">{member.courses}</p>
+                                </div>
+                                <div className="bg-parchment-100 p-4 rounded-2xl border border-maroon/5">
+                                    <p className="text-[9px] font-black text-maroon/30 uppercase tracking-[0.2em] mb-1">Students</p>
+                                    <p className="text-lg font-black text-maroon">{member.totalStudents}</p>
+                                </div>
                             </div>
-                            <div className="bg-parchment-100 p-4 rounded-2xl border border-maroon/5">
-                                <p className="text-[9px] font-black text-maroon/30 uppercase tracking-[0.2em] mb-1">Students</p>
-                                <p className="text-lg font-black text-maroon">{member.totalStudents}</p>
-                            </div>
-                        </div>
 
-                        <div className="mt-8 flex gap-3">
-                            <button
-                                onClick={() => setShowProfile(member)}
-                                className="flex-1 bg-maroon text-gold py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-elite-maroon transition-all shadow-lg"
-                            >
-                                View Full Profile
-                            </button>
-                            <button
-                                onClick={() => handlePrintID(member)}
-                                className="px-4 border border-maroon/10 rounded-xl hover:bg-parchment-100 transition-colors"
-                                title="Print ID Card"
-                            >
-                                <Printer className="w-4 h-4 text-maroon/40" />
-                            </button>
-                            <button
-                                onClick={() => handleEdit(member)}
-                                className="px-4 border border-maroon/10 rounded-xl hover:bg-parchment-100 transition-colors"
-                            >
-                                <Edit className="w-4 h-4 text-maroon/40" />
-                            </button>
-                            <button
-                                onClick={() => handleDelete(member.id)}
-                                className="px-4 border border-red-500/10 rounded-xl hover:bg-red-50 transition-colors"
-                            >
-                                <Trash2 className="w-4 h-4 text-red-400" />
-                            </button>
+                            <div className="mt-8 flex gap-3">
+                                <button
+                                    onClick={() => setShowProfile(member)}
+                                    className="flex-1 bg-maroon text-gold py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-elite-maroon transition-all shadow-lg"
+                                >
+                                    View Full Profile
+                                </button>
+                                <button
+                                    onClick={() => handlePrintID(member)}
+                                    className="px-4 border border-maroon/10 rounded-xl hover:bg-parchment-100 transition-colors"
+                                    title="Print ID Card"
+                                >
+                                    <Printer className="w-4 h-4 text-maroon/40" />
+                                </button>
+                                <button
+                                    onClick={() => handleEdit(member)}
+                                    className="px-4 border border-maroon/10 rounded-xl hover:bg-parchment-100 transition-colors"
+                                >
+                                    <Edit className="w-4 h-4 text-maroon/40" />
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(member.id)}
+                                    className="px-4 border border-red-500/10 rounded-xl hover:bg-red-50 transition-colors"
+                                >
+                                    <Trash2 className="w-4 h-4 text-red-400" />
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-maroon-950/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
-                    <div className="bg-white border border-maroon/10 rounded-[2.5rem] p-10 max-w-2xl w-full shadow-3xl overflow-hidden relative">
+                <div className="fixed inset-0 bg-maroon-950/40 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
+                    <div className="bg-white border border-maroon/10 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 max-w-2xl w-full shadow-3xl overflow-hidden relative">
                         {/* Subtle patterns */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-maroon/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
                         <div className="absolute bottom-0 left-0 w-48 h-48 bg-gold/5 rounded-full -ml-24 -mb-24 blur-3xl"></div>
@@ -295,12 +297,12 @@ export default function Faculty() {
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Passport Number</label>
+                                    <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">National ID Number</label>
                                     <input
                                         type="text"
-                                        placeholder="Passport Number"
-                                        value={formData.passport}
-                                        onChange={(e) => setFormData({ ...formData, passport: e.target.value })}
+                                        placeholder="National ID"
+                                        value={formData.id_number}
+                                        onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
                                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-maroon font-bold placeholder-maroon/20 outline-none focus:ring-2 focus:ring-maroon/5"
                                     />
                                 </div>
@@ -338,27 +340,26 @@ export default function Faculty() {
             {/* Profile Modal */}
             {showProfile && (
                 <div className="fixed inset-0 bg-maroon-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-3xl p-12 max-w-2xl w-full border border-maroon/10 shadow-2xl relative overflow-hidden">
+                    <div className="bg-white rounded-[2rem] md:rounded-3xl p-6 md:p-12 max-w-2xl w-full border border-maroon/10 shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-maroon/5 rounded-full -mr-32 -mt-32"></div>
-                        <button onClick={() => setShowProfile(null)} className="absolute top-8 right-8 p-2 hover:bg-maroon/10 rounded-full transition-colors z-10">
-                            <X className="w-8 h-8 text-maroon" />
+                        <button onClick={() => setShowProfile(null)} className="absolute top-4 right-4 md:top-8 md:right-8 p-2 hover:bg-maroon/10 rounded-full transition-colors z-10">
+                            <X className="w-6 h-6 md:w-8 md:h-8 text-maroon" />
                         </button>
 
-                        <div className="flex gap-10 items-start mb-12 relative z-10">
-                            <div className="w-32 h-32 bg-maroon rounded-[2.5rem] flex items-center justify-center text-gold text-4xl font-black shadow-2xl">
+                        <div className="flex flex-col sm:flex-row gap-6 md:gap-10 items-center sm:items-start mb-8 md:mb-12 relative z-10 text-center sm:text-left">
+                            <div className="w-24 h-24 md:w-32 md:h-32 bg-maroon rounded-[1.5rem] md:rounded-[2.5rem] flex items-center justify-center text-gold text-3xl md:text-4xl font-black shadow-2xl shrink-0">
                                 {showProfile.name.split(' ').map(n => n[0]).join('')}
                             </div>
-                            <div className="space-y-4">
-                                <h2 className="text-4xl font-black text-maroon tracking-tight">{showProfile.name}</h2>
+                            <div className="space-y-2 md:space-y-4">
+                                <h2 className="text-2xl md:text-4xl font-black text-maroon tracking-tight">{showProfile.name}</h2>
                                 <p className="text-sm font-black text-gold bg-maroon px-4 py-2 rounded-xl inline-block uppercase tracking-widest">{showProfile.position}</p>
-                                <div className="flex gap-4 pt-2">
-                                    <div className="flex items-center gap-2 text-xs font-black text-maroon/40 uppercase tracking-widest">
+                                <div className="flex justify-center sm:justify-start gap-4 pt-2">
+                                    <div className="flex items-center gap-2 text-[10px] md:text-xs font-black text-maroon/40 uppercase tracking-widest">
                                         <Mail className="w-4 h-4" /> {showProfile.email}
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div className="grid grid-cols-2 gap-8 relative z-10">
                             <div className="space-y-2">
                                 <p className="text-[10px] font-black text-maroon/30 uppercase tracking-widest">Department</p>
@@ -373,8 +374,8 @@ export default function Faculty() {
                                 <p className="text-lg font-black text-maroon uppercase">{showProfile.contact || 'Not Listed'}</p>
                             </div>
                             <div className="space-y-2">
-                                <p className="text-[10px] font-black text-maroon/30 uppercase tracking-widest">Passport Number</p>
-                                <p className="text-lg font-black text-maroon uppercase">{showProfile.passport || 'N/A'}</p>
+                                <p className="text-[10px] font-black text-maroon/30 uppercase tracking-widest">National ID</p>
+                                <p className="text-lg font-black text-maroon uppercase">{showProfile.id_number || 'N/A'}</p>
                             </div>
                             <div className="space-y-2">
                                 <p className="text-[10px] font-black text-maroon/30 uppercase tracking-widest">Employment Status</p>

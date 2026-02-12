@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Bell, Moon, Sun, LogOut, GraduationCap } from 'lucide-react';
+import { Bell, Moon, Sun, LogOut, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { notificationsAPI } from '../../services/api';
 
-export default function Navbar() {
+export default function Navbar({ onMenuClick }) {
     const { user, logout } = useAuth();
     const { darkMode, toggleDarkMode } = useTheme();
     const navigate = useNavigate();
@@ -35,7 +35,19 @@ export default function Navbar() {
     const unreadCount = safeNotifications.filter(n => !n.read).length;
 
     return (
-        <div className="h-20 bg-primary px-8 flex items-center justify-between fixed top-0 right-0 left-64 z-50 shadow-2xl">
+        <div className="h-20 bg-primary px-4 md:px-8 flex items-center justify-between fixed top-0 right-0 left-0 lg:left-64 z-50 shadow-2xl transition-all duration-300">
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={onMenuClick}
+                    className="p-2.5 text-white/40 hover:text-white hover:bg-white/5 rounded-xl lg:hidden transition-all"
+                >
+                    <Menu className="w-5 h-5" />
+                </button>
+                {/* Brand name or page title could go here for mobile */}
+                <span className="lg:hidden text-xs font-black text-white uppercase tracking-widest truncate max-w-[120px]">
+                    Beautex Portal
+                </span>
+            </div>
             {/* ... header ... */}
 
             <div className="flex items-center gap-6">

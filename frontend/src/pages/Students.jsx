@@ -11,7 +11,7 @@ export default function Students() {
     const [showModal, setShowModal] = useState(false);
     const [editingStudent, setEditingStudent] = useState(null);
     const [formData, setFormData] = useState({
-        id: '', name: '', email: '', course: '', semester: '1st Semester',
+        id: '', name: '', email: '', course: '', intake: 'January Intake',
         gpa: 0, status: 'Active', contact: '',
         dob: '', address: '', guardian_name: '', guardian_contact: '', blood_group: '',
         photo: '', completion_date: '', enrolled_date: new Date().toISOString().split('T')[0]
@@ -98,7 +98,7 @@ export default function Students() {
 
     const resetForm = () => {
         setFormData({
-            id: '', name: '', email: '', course: '', semester: '1st Semester',
+            id: '', name: '', email: '', course: '', intake: 'January Intake',
             gpa: 0, status: 'Active', contact: '',
             dob: '', address: '', guardian_name: '', guardian_contact: '', blood_group: '',
             photo: ''
@@ -127,142 +127,144 @@ export default function Students() {
     const courses = ['Cosmetology', 'Beauty Therapy', 'Catering', 'Computer Packages', 'Website Development', 'Cyber Security'];
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Header Section Screenshot 3 */}
-            <div className="flex justify-between items-end mb-8">
-                <div>
-                    <h1 className="text-2xl font-black text-gray-800 uppercase tracking-tighter">Students</h1>
-                    <p className="text-sm text-gray-400 font-medium">Manage and view all student information</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => window.print()}
-                        className="bg-gold text-maroon px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-gold-dark transition-all font-bold text-xs uppercase tracking-widest shadow-sm"
-                    >
-                        <Plus className="w-4 h-4" /> Export Registry
-                    </button>
-                    <button
-                        onClick={() => { resetForm(); setShowModal(true); }}
-                        className="bg-maroon text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-maroon-dark transition-all font-bold text-xs uppercase tracking-widest shadow-sm"
-                    >
-                        <Plus className="w-4 h-4" /> Add Student
-                    </button>
-                </div>
-            </div>
-
-            {/* Statistics Row Screenshot 3 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                    { label: 'Total Students', value: students.length, color: 'text-gray-800' },
-                    { label: 'Active', value: students.filter(s => s.status === 'Active').length, color: 'text-gray-800' },
-                    { label: 'Average GPA', value: '3.70', color: 'text-gray-800' },
-                ].map((stat, i) => (
-                    <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{stat.label}</p>
-                        <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
+        <div className="space-y-6">
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+                    <div>
+                        <h1 className="text-2xl font-black text-gray-800 uppercase tracking-tighter">Students</h1>
+                        <p className="text-sm text-gray-400 font-medium">Manage and view all student information</p>
                     </div>
-                ))}
-            </div>
-
-            {/* Integrated Search Screenshot 3 */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                        placeholder="Search students..."
-                        className="w-full pl-12 pr-4 py-3 bg-gray-50/50 border border-gray-100 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-300 outline-none focus:border-maroon/20 focus:ring-4 focus:ring-maroon/5 transition-all"
-                    />
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <button
+                            onClick={() => window.print()}
+                            className="flex-1 md:flex-none justify-center bg-gold text-maroon px-4 md:px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-gold-dark transition-all font-bold text-[10px] md:text-xs uppercase tracking-widest shadow-sm"
+                        >
+                            <Plus className="w-4 h-4" /> Export
+                        </button>
+                        <button
+                            onClick={() => { resetForm(); setShowModal(true); }}
+                            className="flex-1 md:flex-none justify-center bg-maroon text-white px-4 md:px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-maroon-dark transition-all font-bold text-[10px] md:text-xs uppercase tracking-widest shadow-sm"
+                        >
+                            <Plus className="w-4 h-4" /> Add Student
+                        </button>
+                    </div>
                 </div>
-                <select
-                    onChange={(e) => {
-                        const status = e.target.value;
-                        if (status === 'All Status') {
-                            fetchStudents();
-                        } else {
-                            const filtered = students.filter(s => s.status === status);
-                            setStudents(filtered);
-                        }
-                    }}
-                    className="bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none"
-                >
-                    <option>All Status</option>
-                    <option>Active</option>
-                    <option>Inactive</option>
-                </select>
-            </div>
 
-            {/* Table Screenshot 3 */}
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden">
-                <table className="w-full text-left">
-                    <thead>
-                        <tr className="bg-gray-50/50 border-b border-gray-100">
-                            {['Student ID', 'Name', 'Course', 'Semester', 'GPA', 'Status', 'Contact', 'Actions'].map(h => (
-                                <th key={h} className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">{h}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                        {students.map((student) => (
-                            <tr key={student.id} className="hover:bg-gray-50/30 transition-colors group">
-                                <td className="px-6 py-5">
-                                    <span className="text-xs font-bold text-gray-500">BT{student.id.toString().padStart(7, '0')}</span>
-                                </td>
-                                <td className="px-6 py-5">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-parchment-200 border border-maroon/10 overflow-hidden flex items-center justify-center">
-                                            {student.photo ? (
-                                                <img src={student.photo} alt={student.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <span className="text-[10px] font-black text-maroon/20">{student.name?.[0]}</span>
-                                            )}
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-gray-800">{student.name}</span>
-                                            <span className="text-[10px] text-gray-400 font-medium">{student.email}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-5 text-xs font-bold text-gray-600">{student.course}</td>
-                                <td className="px-6 py-5 text-xs font-bold text-gray-400">4th Semester</td>
-                                <td className="px-6 py-5 text-xs font-bold text-gray-800">{student.gpa}</td>
-                                <td className="px-6 py-5">
-                                    <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase ${student.status === 'Active' ? 'text-green-500' : 'text-gray-400'}`}>
-                                        {student.status || 'Active'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-5">
-                                    <div className="flex gap-2">
-                                        <button className="p-2 text-gray-300 hover:text-maroon transition-colors"><Edit className="w-4 h-4" /></button>
-                                        <button className="p-2 text-gray-300 hover:text-maroon transition-colors"><Plus className="w-4 h-4" /></button>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-5">
-                                    <div className="flex gap-3">
-                                        <button onClick={() => navigate(`/reports?studentId=${student.id}`)} className="p-2 text-primary/20 hover:text-maroon transition-colors border border-gray-100 rounded-lg" title="View Academic Reports"><FileBarChart className="w-3.5 h-3.5" /></button>
-                                        <button onClick={() => handlePrintID(student)} className="p-2 text-primary/20 hover:text-primary transition-colors border border-gray-100 rounded-lg" title="Print ID Card"><Printer className="w-3.5 h-3.5" /></button>
-                                        <button onClick={() => handleEdit(student)} className="p-2 text-primary/20 hover:text-primary transition-colors border border-gray-100 rounded-lg"><Edit className="w-3.5 h-3.5" /></button>
-                                        <button onClick={() => handleDelete(student.id)} className="p-2 text-primary/10 hover:text-red-600 transition-colors border border-gray-100 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
-                                    </div>
-                                </td>
+                {/* Statistics Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {[
+                        { label: 'Total Students', value: students.length, color: 'text-gray-800' },
+                        { label: 'Active', value: students.filter(s => s.status === 'Active').length, color: 'text-gray-800' },
+                        { label: 'Average GPA', value: '3.70', color: 'text-gray-800' },
+                    ].map((stat, i) => (
+                        <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-transform hover:-translate-y-1">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{stat.label}</p>
+                            <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Integrated Search */}
+                <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    <div className="flex-1 relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            placeholder="Search students..."
+                            className="w-full pl-12 pr-4 py-3 bg-gray-50/50 border border-gray-100 rounded-xl text-sm font-medium text-gray-700 placeholder-gray-300 outline-none focus:border-maroon/20 focus:ring-4 focus:ring-maroon/5 transition-all"
+                        />
+                    </div>
+                    <select
+                        onChange={(e) => {
+                            const status = e.target.value;
+                            if (status === 'All Status') {
+                                fetchStudents();
+                            } else {
+                                const filtered = students.filter(s => s.status === status);
+                                setStudents(filtered);
+                            }
+                        }}
+                        className="bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none"
+                    >
+                        <option>All Status</option>
+                        <option>Active</option>
+                        <option>Inactive</option>
+                    </select>
+                </div>
+
+                {/* Table wrapper for horizontal scroll */}
+                <div className="bg-white border border-gray-100 rounded-2xl shadow-xl overflow-x-auto custom-scrollbar">
+                    <table className="w-full text-left min-w-[1000px]">
+                        <thead>
+                            <tr className="bg-gray-50/50 border-b border-gray-100">
+                                {['Student ID', 'Name', 'Course', 'Intake', 'GPA', 'Status', 'Contact', 'Actions'].map(h => (
+                                    <th key={h} className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">{h}</th>
+                                ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                            {students.map((student) => (
+                                <tr key={student.id} className="hover:bg-gray-50/30 transition-colors group">
+                                    <td className="px-6 py-5">
+                                        <span className="text-xs font-bold text-gray-500">BT{student.id.toString().padStart(7, '0')}</span>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-parchment-200 border border-maroon/10 overflow-hidden flex items-center justify-center">
+                                                {student.photo ? (
+                                                    <img src={student.photo} alt={student.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <span className="text-[10px] font-black text-maroon/20">{student.name?.[0]}</span>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-gray-800">{student.name}</span>
+                                                <span className="text-[10px] text-gray-400 font-medium">{student.email}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-5 text-xs font-bold text-gray-600">{student.course}</td>
+                                    <td className="px-6 py-5 text-xs font-bold text-gray-400">{student.intake || student.semester || 'N/A'}</td>
+                                    <td className="px-6 py-5 text-xs font-bold text-gray-800">{student.gpa}</td>
+                                    <td className="px-6 py-5">
+                                        <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase ${student.status === 'Active' ? 'text-green-500' : 'text-gray-400'}`}>
+                                            {student.status || 'Active'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        <div className="flex gap-2">
+                                            <button className="p-2 text-gray-300 hover:text-maroon transition-colors"><Edit className="w-4 h-4" /></button>
+                                            <button className="p-2 text-gray-300 hover:text-maroon transition-colors"><Plus className="w-4 h-4" /></button>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        <div className="flex gap-3">
+                                            <button onClick={() => navigate(`/reports?studentId=${student.id}`)} className="p-2 text-primary/20 hover:text-maroon transition-colors border border-gray-100 rounded-lg" title="View Academic Reports"><FileBarChart className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => handlePrintID(student)} className="p-2 text-primary/20 hover:text-primary transition-colors border border-gray-100 rounded-lg" title="Print ID Card"><Printer className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => handleEdit(student)} className="p-2 text-primary/20 hover:text-primary transition-colors border border-gray-100 rounded-lg"><Edit className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => handleDelete(student.id)} className="p-2 text-primary/10 hover:text-red-600 transition-colors border border-gray-100 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-maroon-950/60 backdrop-blur-xl flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-[2.5rem] p-12 max-w-2xl w-full shadow-3xl border border-maroon/10 scale-in-center overflow-hidden relative">
+                <div className="fixed inset-0 bg-maroon-950/60 backdrop-blur-xl flex items-center justify-center p-4 z-[100]">
+                    <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 max-w-2xl w-full shadow-3xl border border-maroon/10 scale-in-center overflow-hidden relative">
                         {/* Elegant background texture */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-maroon/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
                         <div className="absolute bottom-0 left-0 w-48 h-48 bg-gold/5 rounded-full -ml-24 -mb-24 blur-3xl"></div>
 
-                        <div className="relative flex justify-between items-center mb-12">
+                        <div className="relative flex justify-between items-center mb-6 md:mb-12">
                             <div>
                                 <h2 className="text-2xl font-black text-maroon uppercase tracking-tight">
                                     {editingStudent ? 'Update Registry' : 'New Enrollment'}
@@ -395,14 +397,14 @@ export default function Students() {
                                             </select>
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Current Semester</label>
+                                            <label className="text-[10px] font-black text-maroon/40 uppercase tracking-widest ml-1">Current Intake</label>
                                             <select
-                                                value={formData.semester}
-                                                onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
+                                                value={formData.intake}
+                                                onChange={(e) => setFormData({ ...formData, intake: e.target.value })}
                                                 className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-maroon font-bold outline-none focus:ring-2 focus:ring-maroon/10"
                                             >
-                                                {['1st Semester', '2nd Semester', '3rd Semester', '4th Semester', '5th Semester', '6th Semester', '7th Semester', '8th Semester'].map(sem => (
-                                                    <option key={sem} value={sem}>{sem}</option>
+                                                {['January Intake', 'February Intake', 'March Intake', 'April Intake', 'May Intake', 'June Intake', 'July Intake', 'August Intake', 'September Intake', 'October Intake', 'November Intake', 'December Intake'].map(intake => (
+                                                    <option key={intake} value={intake}>{intake}</option>
                                                 ))}
                                             </select>
                                         </div>

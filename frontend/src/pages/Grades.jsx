@@ -71,22 +71,22 @@ export default function Grades() {
 
     return (
         <div className="space-y-8 animate-in fade-in zoom-in-95 duration-700">
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-maroon tracking-tight uppercase">
+                    <h1 className="text-2xl md:text-3xl font-black text-maroon tracking-tight uppercase">
                         {isStudent ? 'My Academic Record' : 'Performance Registry'}
                     </h1>
                     <p className="text-xs text-maroon/40 font-bold tracking-widest mt-1">
                         {isStudent ? 'Official Transcript Preview' : 'Confidential Campus Results'}
                     </p>
                 </div>
-                <div className="p-1 px-4 bg-maroon/5 rounded-full border border-maroon/10">
+                <div className="p-1 px-4 bg-maroon/5 rounded-full border border-maroon/10 self-start md:self-auto">
                     <p className="text-[10px] font-black text-maroon/40 uppercase tracking-widest">Secure Access Active</p>
                 </div>
             </div>
 
             {/* Status Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="card-elite p-8 relative overflow-hidden group">
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-gold/10 rounded-full blur-2xl group-hover:bg-gold/20 transition-all"></div>
                     <div className="relative z-10">
@@ -101,20 +101,23 @@ export default function Grades() {
                         </div>
                     </div>
                 </div>
-                {!isStudent && (
+                {(!isStudent || true) && ( // Show on student for balance if needed, or keep logic
                     <div className="card-elite p-8 relative overflow-hidden group">
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl"></div>
                         <div className="relative z-10">
-                            <p className="text-gold/60 text-[10px] font-black uppercase tracking-widest mb-1">Average GPA</p>
-                            <p className="text-4xl font-black text-white">3.86</p>
-                            <p className="text-[10px] text-white/40 mt-2 font-bold italic">Top 5% in Region</p>
+                            <p className="text-gold/60 text-[10px] font-black uppercase tracking-widest mb-1">
+                                {isStudent ? 'Credits Earned' : 'Top Rank'}
+                            </p>
+                            <p className="text-4xl font-black text-white">{isStudent ? '48' : '3.86'}</p>
+                            <p className="text-[10px] text-white/40 mt-2 font-bold italic">Outstanding Performance</p>
                         </div>
                     </div>
                 )}
             </div>
 
             {/* Grades Table */}
-            <div className="card-elite overflow-hidden border border-gold/10">
-                <div className="p-8 border-b border-white/5 flex justify-between items-center">
+            <div className="card-elite border border-gold/10 overflow-hidden">
+                <div className="p-6 md:p-8 border-b border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h3 className="text-lg font-black text-white uppercase tracking-tight">
                             {isStudent ? 'Your Graded Assessments' : 'Student Performance Registry'}
@@ -129,44 +132,46 @@ export default function Grades() {
                             </select>
                         )}
                     </div>
-                    <div className="flex gap-4">
-                        <button onClick={handleDownload} className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all group">
+                    <div className="flex gap-4 w-full sm:w-auto">
+                        <button onClick={handleDownload} className="flex-1 sm:flex-none justify-center p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all group">
                             <Download className="w-5 h-5 text-gold group-hover:scale-110 transition-transform" />
                         </button>
                     </div>
                 </div>
-                <table className="w-full">
-                    <thead>
-                        <tr className="bg-white/5">
-                            {['Student ID', 'Course', 'Assignment', 'Score'].map(header => (
-                                <th key={header} className="px-8 py-6 text-left text-[10px] font-black text-gold/40 uppercase tracking-[0.2em]">{header}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                        {grades.map((grade) => (
-                            <tr key={grade.id} className="hover:bg-white/5 transition-colors group">
-                                <td className="px-8 py-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 bg-gold/10 rounded-xl flex items-center justify-center font-black text-gold border border-gold/20">
-                                            {grade.student_id?.[0]}
-                                        </div>
-                                        <p className="text-sm font-bold text-white group-hover:text-gold transition-colors">{grade.student_id}</p>
-                                    </div>
-                                </td>
-                                <td className="px-8 py-6 text-xs font-bold text-white/60 tracking-tight">{grade.course}</td>
-                                <td className="px-8 py-6 text-xs font-medium text-white/40 italic">{grade.assignment}</td>
-                                <td className="px-8 py-6">
-                                    <span className="text-lg font-black text-gold">{grade.score}/{grade.max_score}</span>
-                                </td>
+                <div className="overflow-x-auto custom-scrollbar">
+                    <table className="w-full min-w-[800px]">
+                        <thead>
+                            <tr className="bg-white/5">
+                                {['Student ID', 'Course', 'Assignment', 'Score'].map(header => (
+                                    <th key={header} className="px-8 py-6 text-left text-[10px] font-black text-gold/40 uppercase tracking-[0.2em]">{header}</th>
+                                ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {grades.map((grade) => (
+                                <tr key={grade.id} className="hover:bg-white/5 transition-colors group">
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 bg-gold/10 rounded-xl flex items-center justify-center font-black text-gold border border-gold/20">
+                                                {grade.student_id?.[0]}
+                                            </div>
+                                            <p className="text-sm font-bold text-white group-hover:text-gold transition-colors">{grade.student_id}</p>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-xs font-bold text-white/60 tracking-tight">{grade.course}</td>
+                                    <td className="px-8 py-6 text-xs font-medium text-white/40 italic">{grade.assignment}</td>
+                                    <td className="px-8 py-6">
+                                        <span className="text-lg font-black text-gold">{grade.score}/{grade.max_score}</span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div className="flex justify-center py-10">
-                <button onClick={isStudent ? () => window.print() : handleValidate} className="px-16 py-6 bg-gold text-maroon rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] hover:scale-110 active:scale-95 transition-all shadow-[0_20px_40px_-10px_rgba(255,215,0,0.3)] hover:shadow-gold/50">
+                <button onClick={isStudent ? () => window.print() : handleValidate} className="px-8 md:px-16 py-6 bg-gold text-maroon rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-[0.3em] hover:scale-110 active:scale-95 transition-all shadow-[0_20px_40px_-10px_rgba(255,215,0,0.3)] hover:shadow-gold/50">
                     {isStudent ? 'Request Official Transcript' : 'Validate Results Batch'}
                 </button>
             </div>

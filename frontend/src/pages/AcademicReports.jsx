@@ -17,6 +17,7 @@ import {
     ShieldCheck,
     ClipboardCheck,
     Search,
+    Edit,
     X
 } from 'lucide-react';
 
@@ -27,6 +28,7 @@ export default function AcademicReports() {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [editingReport, setEditingReport] = useState(null);
     const [printingReport, setPrintingReport] = useState(null);
     const [filterStudentId, setFilterStudentId] = useState('');
 
@@ -103,13 +105,40 @@ export default function AcademicReports() {
         };
 
         try {
-            await reportsAPI.create(reportPayload);
+            if (editingReport) {
+                await reportsAPI.update(editingReport.id, reportPayload);
+            } else {
+                await reportsAPI.create(reportPayload);
+            }
             setShowModal(false);
+            setEditingReport(null);
             fetchInitialData();
-            alert('Academic Evaluation successfully captured.');
+            alert(`Academic Evaluation successfully ${editingReport ? 'updated' : 'captured'}.`);
         } catch (error) {
             alert(error.response?.data?.error || 'Failed to submit report');
         }
+    };
+
+    const handleEdit = (report) => {
+        setEditingReport(report);
+        setFormData({
+            student_id: report.student_id,
+            reporting_period: report.reporting_period,
+            total_lessons: report.total_lessons,
+            attended_lessons: report.attended_lessons,
+            theory_topics: report.theory_topics,
+            theory_score: report.theory_score,
+            theory_remarks: report.theory_remarks,
+            practical_tasks: report.practical_tasks,
+            equipment_used: report.equipment_used,
+            skill_level: report.skill_level,
+            safety_compliance: report.safety_compliance,
+            discipline_issues: report.discipline_issues,
+            trainer_observations: report.trainer_observations,
+            progress_summary: report.progress_summary,
+            recommendation: report.recommendation
+        });
+        setShowModal(true);
     };
 
     const handleDelete = async (id) => {
@@ -127,16 +156,16 @@ export default function AcademicReports() {
     return (
         <div className="space-y-8 pb-20">
             {/* Header */}
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-maroon uppercase tracking-tight">Trainer Academic Reports</h1>
+                    <h1 className="text-2xl md:text-3xl font-black text-maroon uppercase tracking-tight">Trainer Academic Reports</h1>
                     <p className="text-sm text-gray-400 font-medium">Daily work report alignment & student tracking</p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                     {filterStudentId && (
                         <button
                             onClick={() => setFilterStudentId('')}
-                            className="bg-gray-100 text-gray-500 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all flex items-center gap-2"
+                            className="bg-gray-100 text-gray-500 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
                         >
                             <X className="w-4 h-4" /> Clear Filter
                         </button>
@@ -144,7 +173,7 @@ export default function AcademicReports() {
                     {user?.role !== 'student' && (
                         <button
                             onClick={() => setShowModal(true)}
-                            className="bg-maroon text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-maroon/90 transition-all shadow-xl flex items-center gap-3 active:scale-95"
+                            className="bg-maroon text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-maroon/90 transition-all shadow-xl flex items-center justify-center gap-3 active:scale-95"
                         >
                             <Plus className="w-4 h-4 text-gold" /> Capture New Report
                         </button>
@@ -153,7 +182,7 @@ export default function AcademicReports() {
             </div>
 
             {/* Filter Bar */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                 <div className="flex-1 relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
                     <select
@@ -168,14 +197,14 @@ export default function AcademicReports() {
             </div>
 
             {/* Reports List */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                 {filteredReports.map((report) => (
-                    <div key={report.id} className="card-elite border border-maroon/5 p-8 space-y-6 relative group overflow-hidden bg-white print:shadow-none print:border print:m-4">
+                    <div key={report.id} className="card-elite border border-maroon/5 p-6 md:p-8 space-y-6 relative group overflow-hidden bg-white print:shadow-none print:border print:m-4">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-maroon/5 rounded-bl-[5rem] -mr-16 -mt-16 transition-all group-hover:bg-maroon/10 print:hidden"></div>
 
-                        <div className="flex justify-between items-start relative z-10">
+                        <div className="flex flex-col sm:flex-row justify-between items-start relative z-10 gap-4">
                             <div className="flex gap-4">
-                                <div className="w-14 h-14 bg-maroon rounded-2xl flex items-center justify-center font-black text-gold shadow-lg">
+                                <div className="w-12 h-12 md:w-14 md:h-14 bg-maroon rounded-2xl flex items-center justify-center font-black text-gold shadow-lg shrink-0">
                                     {report.student_name[0]}
                                 </div>
                                 <div>
@@ -199,13 +228,22 @@ export default function AcademicReports() {
                                         <Printer className="w-4 h-4" />
                                     </button>
                                     {(user?.role === 'admin' || user?.role === 'superadmin' || user?.email === report.trainer_email) && (
-                                        <button
-                                            onClick={() => handleDelete(report.id)}
-                                            className="text-gray-300 hover:text-red-500 transition-colors p-1"
-                                            title="Delete Record"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleEdit(report)}
+                                                className="text-gray-300 hover:text-maroon transition-colors p-1"
+                                                title="Edit Record"
+                                            >
+                                                <Edit className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(report.id)}
+                                                className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                                                title="Delete Record"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -351,13 +389,15 @@ export default function AcademicReports() {
                     <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 border border-white/50">
                         <div className="bg-maroon p-8 flex justify-between items-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed">
                             <div>
-                                <h2 className="text-white text-2xl font-black uppercase tracking-tight">Academic Report Capture</h2>
+                                <h2 className="text-white text-2xl font-black uppercase tracking-tight">
+                                    {editingReport ? 'Update Academic Report' : 'Academic Report Capture'}
+                                </h2>
                                 <p className="text-gold/60 text-[10px] font-black uppercase tracking-widest">BT-REG-09 | Trainer Portal</p>
                             </div>
-                            <button onClick={() => setShowModal(false)} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all">✕</button>
+                            <button onClick={() => { setShowModal(false); setEditingReport(null); }} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all">✕</button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                        <form onSubmit={handleSubmit} className="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-h-[75vh] overflow-y-auto custom-scrollbar">
                             {/* Section 1: Basic Info */}
                             <div className="md:col-span-2 space-y-4">
                                 <div className="flex items-center gap-2 border-b-2 border-maroon/5 pb-2 mb-4">
@@ -528,7 +568,7 @@ export default function AcademicReports() {
 
                             <div className="md:col-span-2 pt-6">
                                 <button type="submit" className="w-full bg-maroon text-white py-5 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.4em] shadow-2xl hover:bg-maroon/90 hover:-translate-y-1 transition-all active:scale-95">
-                                    Seal Academic Record
+                                    {editingReport ? 'Synchronize Evaluation' : 'Seal Academic Record'}
                                 </button>
                             </div>
                         </form>

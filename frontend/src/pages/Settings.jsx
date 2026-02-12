@@ -9,7 +9,7 @@ export default function Settings() {
         college_name: 'Beautex Technical College',
         college_abbr: 'BTC',
         academic_year: '2025/2026',
-        semester: 'Semester 1',
+        intake: 'January Intake',
         contact_email: '',
         maintenance_mode: false,
         student_portal_enabled: true,
@@ -168,15 +168,24 @@ export default function Settings() {
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-primary/40 uppercase tracking-widest ml-1">Current Semester</label>
+                                    <label className="text-[10px] font-black text-primary/40 uppercase tracking-widest ml-1">Current Intake</label>
                                     <select
-                                        value={settings.semester}
-                                        onChange={(e) => setSettings({ ...settings, semester: e.target.value })}
+                                        value={settings.intake || settings.semester}
+                                        onChange={(e) => setSettings({ ...settings, intake: e.target.value })}
                                         className="w-full px-5 py-4 bg-parchment border-none rounded-2xl text-primary font-bold outline-none focus:ring-2 focus:ring-primary/10"
                                     >
-                                        <option>Semester 1</option>
-                                        <option>Semester 2</option>
-                                        <option>Summer Session</option>
+                                        <option value="January Intake">January Intake</option>
+                                        <option value="February Intake">February Intake</option>
+                                        <option value="March Intake">March Intake</option>
+                                        <option value="April Intake">April Intake</option>
+                                        <option value="May Intake">May Intake</option>
+                                        <option value="June Intake">June Intake</option>
+                                        <option value="July Intake">July Intake</option>
+                                        <option value="August Intake">August Intake</option>
+                                        <option value="September Intake">September Intake</option>
+                                        <option value="October Intake">October Intake</option>
+                                        <option value="November Intake">November Intake</option>
+                                        <option value="December Intake">December Intake</option>
                                     </select>
                                 </div>
                             </div>

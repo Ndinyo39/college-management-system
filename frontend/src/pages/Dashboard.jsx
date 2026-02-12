@@ -64,12 +64,12 @@ function AdminDashboard() {
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex justify-between items-end mb-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-4">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-800 uppercase tracking-tighter">Campus Overview</h1>
+                    <h1 className="text-2xl md:text-3xl font-black text-gray-800 uppercase tracking-tighter">Campus Overview</h1>
                     <p className="text-sm text-gray-400 font-medium">Strategic Operations & Management Centre</p>
                 </div>
-                <div className="text-right">
+                <div className="text-left md:text-right">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
             </div>
@@ -82,13 +82,13 @@ function AdminDashboard() {
                             <div className="flex justify-between items-start relative z-10">
                                 <div>
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{stat.title}</p>
-                                    <p className="text-3xl font-black text-gray-800">{stat.value}</p>
+                                    <p className="text-2xl md:text-3xl font-black text-gray-800">{stat.value}</p>
                                     <p className={`text-[10px] font-bold mt-2 ${stat.change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
                                         {stat.trend === 'up' ? '↑' : '↓'} {stat.change}
                                     </p>
                                 </div>
-                                <div className="w-14 h-14 bg-maroon/5 rounded-2xl flex items-center justify-center group-hover:bg-[#800000] transition-colors">
-                                    <Icon className="w-7 h-7 text-[#800000] group-hover:text-[#FFD700] transition-colors" />
+                                <div className="w-12 h-12 md:w-14 md:h-14 bg-maroon/5 rounded-2xl flex items-center justify-center group-hover:bg-[#800000] transition-colors">
+                                    <Icon className="w-6 h-6 md:w-7 md:h-7 text-[#800000] group-hover:text-[#FFD700] transition-colors" />
                                 </div>
                             </div>
                         </div>
@@ -96,24 +96,24 @@ function AdminDashboard() {
                 })}
             </div>
 
-            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-lg relative overflow-hidden">
+            <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-lg relative overflow-hidden">
                 <div className="flex items-center gap-2 mb-8">
                     <div className="w-6 h-6 bg-[#FFD700]/20 rounded flex items-center justify-center">
                         <Zap className="w-4 h-4 text-[#FFD700]" />
                     </div>
                     <h2 className="text-xs font-black text-gray-800 uppercase tracking-widest">Global Directives</h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <button onClick={() => navigate('/students')} className="flex items-center justify-center gap-3 bg-[#800000] text-white px-6 py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#600000] transition-all shadow-xl hover:-translate-y-1 active:scale-95">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <button onClick={() => navigate('/students')} className="flex items-center justify-center gap-3 bg-[#800000] text-white px-4 md:px-6 py-4 md:py-5 rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] hover:bg-[#600000] transition-all shadow-xl hover:-translate-y-1 active:scale-95">
                         <UserPlus className="w-4 h-4 text-[#FFD700]" /> Register Student
                     </button>
-                    <button onClick={() => navigate('/faculty')} className="flex items-center justify-center gap-3 bg-[#FFD700] text-[#800000] px-6 py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#E5C100] transition-all shadow-xl hover:-translate-y-1 active:scale-95">
+                    <button onClick={() => navigate('/faculty')} className="flex items-center justify-center gap-3 bg-[#FFD700] text-[#800000] px-4 md:px-6 py-4 md:py-5 rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] hover:bg-[#E5C100] transition-all shadow-xl hover:-translate-y-1 active:scale-95">
                         <UserPlus className="w-4 h-4" /> Recruit Faculty
                     </button>
-                    <button onClick={() => window.print()} className="flex items-center justify-center gap-3 bg-blue-600 text-white px-6 py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-blue-700 transition-all shadow-xl hover:-translate-y-1 active:scale-95">
+                    <button onClick={() => window.print()} className="flex items-center justify-center gap-3 bg-blue-600 text-white px-4 md:px-6 py-4 md:py-5 rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] hover:bg-blue-700 transition-all shadow-xl hover:-translate-y-1 active:scale-95">
                         <FileText className="w-4 h-4 text-blue-200" /> Export Analytics
                     </button>
-                    <button onClick={() => alert('Treasury Hub: Financial records coming soon!')} className="flex items-center justify-center gap-3 bg-green-600 text-white px-6 py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-green-700 transition-all shadow-xl hover:-translate-y-1 active:scale-95">
+                    <button onClick={() => alert('Treasury Hub: Financial records coming soon!')} className="flex items-center justify-center gap-3 bg-green-600 text-white px-4 md:px-6 py-4 md:py-5 rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] hover:bg-green-700 transition-all shadow-xl hover:-translate-y-1 active:scale-95">
                         <DollarSign className="w-4 h-4 text-green-200" /> Treasury Hub
                     </button>
                 </div>

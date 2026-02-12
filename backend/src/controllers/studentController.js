@@ -46,10 +46,7 @@ export async function getStudent(req, res) {
 
 export async function createStudent(req, res) {
     try {
-        const {
-            id, name, email, course, semester, gpa, status, contact, photo, enrolled_date,
-            dob, address, guardian_name, guardian_contact, blood_group, completion_date
-        } = req.body;
+        const { id, name, email, course, intake, contact, photo, dob, address, guardian_name, guardian_contact, blood_group } = req.body;
 
         if (!id || !name || !email || !course) {
             return res.status(400).json({ error: 'ID, name, email, and course are required' });
@@ -59,21 +56,51 @@ export async function createStudent(req, res) {
             const Student = (await import('../models/mongo/Student.js')).default;
             const newStudent = new Student({
                 id, name, email, course,
-                semester: semester || '1st Semester',
-                gpa: gpa || 0.0,
-                status: status || 'Active',
+                intake: intake || '1st Intake', // Changed from semester
+                gpa: req.body.gpa || 0.0, // Retained gpa from original
+                status: req.body.status || 'Active', // Retained status from original
                 contact, photo,
-                enrolled_date: enrolled_date || new Date(),
-                dob, address, guardian_name, guardian_contact, blood_group, completion_date
+                enrolled_date: req.body.enrolled_date || new Date(), // Retained enrolled_date from original
+                dob, address, guardian_name, guardian_contact, blood_group,
+                completion_date: req.body.completion_date // Retained completion_date from original
             });
             const savedStudent = await newStudent.save();
+
+            // Create User Account for the student
+            try {
+                const User = (await import('../models/mongo/User.js')).default;
+                const existingUser = await User.findOne({ email });
+                if (!existingUser) {
+                    const randomPassword = crypto.randomBytes(4).toString('hex');
+                    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+                    const newUser = new User({
+                        email,
+                        password: hashedPassword,
+                        role: 'student',
+                        must_change_password: true
+                    });
+                    await newUser.save();
+
+                    await sendWelcomeEmail(email, 'student', randomPassword);
+                    console.log(`✅ User account created and invitation email sent for student: ${email}`);
+                }
+            } catch (userError) {
+                console.error('Failed to create user account for student (Mongo):', userError);
+            }
+
             return res.status(201).json(savedStudent);
         }
 
         await run(
-            `INSERT INTO students (id, name, email, course, semester, gpa, status, contact, photo, enrolled_date, dob, address, guardian_name, guardian_contact, blood_group, completion_date)
+            `INSERT INTO students (id, name, email, course, intake, gpa, status, contact, photo, enrolled_date, dob, address, guardian_name, guardian_contact, blood_group, completion_date)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, name, email, course, semester || '1st Semester', gpa || 0.0, status || 'Active', contact, photo, enrolled_date, dob, address, guardian_name, guardian_contact, blood_group, completion_date]
+            [
+                id, name, email, course, intake || 'January Intake',
+                req.body.gpa || 0.0, req.body.status || 'Active', contact, photo,
+                req.body.enrolled_date || new Date().toISOString().split('T')[0],
+                dob, address, guardian_name, guardian_contact, blood_group, req.body.completion_date
+            ]
         );
 
         // Create User Account for the student
@@ -120,6 +147,13 @@ export async function updateStudent(req, res) {
             if (!updatedStudent) return res.status(404).json({ error: 'Student not found' });
             return res.json(updatedStudent);
         }
+
+        const fields = Object.keys(req.body).filter(k => k !== 'id');
+        if (fields.length === 0) return res.status(400).json({ error: 'No fields to update' });
+
+        const setClause = fields.map(f => `${f} = ?`).join(', ');
+        const values = fields.map(f => req.body[f]);
+        values.push(req.params.id);
 
         await run(`UPDATE students SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, values);
         const student = await queryOne('SELECT * FROM students WHERE id = ?', [req.params.id]);

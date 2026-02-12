@@ -94,9 +94,9 @@ export default function Attendance() {
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-maroon tracking-tight uppercase">
+                    <h1 className="text-2xl md:text-3xl font-black text-maroon tracking-tight uppercase">
                         {isStudent ? 'Attendance Profile' : 'Attendance Registry'}
                     </h1>
                     <p className="text-xs text-maroon/40 font-bold tracking-widest mt-1">
@@ -106,12 +106,12 @@ export default function Attendance() {
             </div>
 
             {!isStudent && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div className="md:col-span-2 card-light p-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="sm:col-span-2 card-light p-3">
                         <select
                             value={selectedCourse}
                             onChange={(e) => setSelectedCourse(e.target.value)}
-                            className="w-full h-full bg-parchment-100 border-none rounded-xl text-xs font-black uppercase tracking-widest text-maroon/60 px-4 focus:ring-2 focus:ring-maroon/5 outline-none"
+                            className="w-full h-full py-3 bg-parchment-100 border-none rounded-xl text-xs font-black uppercase tracking-widest text-maroon/60 px-4 focus:ring-2 focus:ring-maroon/5 outline-none"
                         >
                             <option value="">Select Academic Program</option>
                             {courses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
@@ -123,7 +123,7 @@ export default function Attendance() {
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
-                            className="flex-1 bg-transparent border-none text-xs font-black uppercase tracking-widest text-maroon/60 outline-none"
+                            className="flex-1 bg-transparent border-none text-xs font-black uppercase tracking-widest text-maroon/60 py-3 outline-none"
                         />
                     </div>
                     <button onClick={fetchRegistry} className="bg-maroon text-gold px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-elite-maroon transition-all">
@@ -132,8 +132,8 @@ export default function Attendance() {
                 </div>
             )}
 
-            <div className="card-light overflow-hidden shadow-xl border border-maroon/5">
-                <table className="w-full">
+            <div className="card-light overflow-x-auto shadow-xl border border-maroon/5 custom-scrollbar">
+                <table className="w-full min-w-[700px]">
                     <thead>
                         <tr className="bg-maroon/5">
                             {isStudent ? (

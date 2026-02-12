@@ -45,7 +45,7 @@ export async function getFaculty(req, res) {
 
 export async function createFaculty(req, res) {
     try {
-        const { id, name, email, department, courses, contact, passport, status } = req.body;
+        const { id, name, email, department, courses, contact, id_number, status } = req.body;
 
         if (!id) {
             return res.status(400).json({ error: 'Faculty ID is required.' });
@@ -53,15 +53,39 @@ export async function createFaculty(req, res) {
 
         if (await isMongo()) {
             const Faculty = (await import('../models/mongo/Faculty.js')).default;
-            const newFaculty = new Faculty({ id, name, email, department, courses, contact, passport, status });
+            const newFaculty = new Faculty({ id, name, email, department, courses, contact, id_number, status });
             const savedFaculty = await newFaculty.save();
+
+            // Create User Account for the faculty
+            try {
+                const User = (await import('../models/mongo/User.js')).default;
+                const existingUser = await User.findOne({ email });
+                if (!existingUser) {
+                    const randomPassword = crypto.randomBytes(4).toString('hex');
+                    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+                    const newUser = new User({
+                        email,
+                        password: hashedPassword,
+                        role: 'teacher',
+                        must_change_password: true
+                    });
+                    await newUser.save();
+
+                    await sendWelcomeEmail(email, 'teacher', randomPassword);
+                    console.log(`✅ User account created and invitation email sent for faculty: ${email}`);
+                }
+            } catch (userError) {
+                console.error('Failed to create user account for faculty (Mongo):', userError);
+            }
+
             return res.status(201).json(savedFaculty);
         }
 
         const coursesStr = typeof courses === 'string' ? courses : JSON.stringify(courses || []);
         await run(
-            'INSERT INTO faculty (id, name, email, department, position, specialization, courses, contact, passport, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, name, email, department, req.body.position || 'Instructor', req.body.specialization || department, coursesStr, contact, passport, status || 'Active']
+            'INSERT INTO faculty (id, name, email, department, position, specialization, courses, contact, id_number, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, name, email, department, req.body.position || 'Instructor', req.body.specialization || department, coursesStr, contact, id_number, status || 'Active']
         );
 
         // Create User Account for the faculty

@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS students (
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
   course TEXT NOT NULL,
-  semester TEXT,
+  intake TEXT,
   gpa REAL DEFAULT 0.0,
   status TEXT DEFAULT 'Active' CHECK(status IN ('Active', 'Inactive', 'Graduated')),
   contact TEXT,
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS faculty (
   specialization TEXT,
   courses TEXT, -- JSON array of course names
   contact TEXT,
-  passport TEXT, -- Passport number for trainers
+  id_number TEXT, -- National ID
   status TEXT DEFAULT 'Active' CHECK(status IN ('Active', 'Inactive')),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -115,26 +115,26 @@ INSERT OR IGNORE INTO courses (id, name, department, instructor, duration, enrol
 ('CS101', 'Cyber Security', 'Technology', 'Dr. Jennifer Park', '10 weeks', 22, 25, 'Tue, Thu 9:00-11:00 AM', 'Computer Lab 3', 'Active');
 
 -- Insert demo students
-INSERT OR IGNORE INTO students (id, name, email, course, semester, gpa, status, contact, enrolled_date) VALUES
-('BT2024001', 'Sarah Johnson', 'sarah.johnson@beautex.edu', 'Cosmetology', '4th Semester', 3.8, 'Active', '+254 700 123 456', '2023-09-15'),
-('BT2024002', 'Michael Chen', 'michael.chen@beautex.edu', 'Beauty Therapy', '3rd Semester', 3.6, 'Active', '+254 700 234 567', '2024-01-10'),
-('BT2024003', 'Emily Rodriguez', 'emily.rodriguez@beautex.edu', 'Catering', '6th Semester', 3.9, 'Active', '+254 700 345 678', '2022-09-01'),
-('BT2024004', 'David Kim', 'david.kim@beautex.edu', 'Computer Packages', '2nd Semester', 3.5, 'Active', '+254 700 456 789', '2024-05-20'),
-('BT2024005', 'Jessica Taylor', 'jessica.taylor@beautex.edu', 'Website Development', '5th Semester', 3.7, 'Active', '+254 700 567 890', '2023-01-15');
+INSERT OR IGNORE INTO students (id, name, email, course, intake, gpa, status, contact, enrolled_date) VALUES
+('BT2024001', 'Sarah Johnson', 'sarah.johnson@beautex.edu', 'Cosmetology', 'January Intake', 3.8, 'Active', '+254 700 123 456', '2023-09-15'),
+('BT2024002', 'Michael Chen', 'michael.chen@beautex.edu', 'Beauty Therapy', 'May Intake', 3.6, 'Active', '+254 700 234 567', '2024-01-10'),
+('BT2024003', 'Emily Rodriguez', 'emily.rodriguez@beautex.edu', 'Catering', 'September Intake', 3.9, 'Active', '+254 700 345 678', '2022-09-01'),
+('BT2024004', 'David Kim', 'david.kim@beautex.edu', 'Computer Packages', 'January Intake', 3.5, 'Active', '+254 700 456 789', '2024-05-20'),
+('BT2024005', 'Jessica Taylor', 'jessica.taylor@beautex.edu', 'Website Development', 'May Intake', 3.7, 'Active', '+254 700 567 890', '2023-01-15');
 
 -- Insert demo faculty
-INSERT OR IGNORE INTO faculty (id, name, email, department, courses, contact, status) VALUES
-('FAC001', 'Dr. James Wilson', 'james.wilson@beautex.edu', 'Technology', '["Computer Packages"]', '+254 711 111 111', 'Active'),
-('FAC002', 'Prof. Sarah Anderson', 'sarah.anderson@beautex.edu', 'Beauty & Personal Care', '["Cosmetology"]', '+254 711 222 222', 'Active'),
-('FAC003', 'Dr. Emily Davis', 'emily.davis@beautex.edu', 'Beauty & Personal Care', '["Beauty Therapy"]', '+254 711 333 333', 'Active'),
-('FAC004', 'Chef Michael Brown', 'michael.brown@beautex.edu', 'Hospitality', '["Catering"]', '+254 711 444 444', 'Active'),
-('FAC005', 'Prof. David Chen', 'david.chen@beautex.edu', 'Technology', '["Website Development"]', '+254 711 555 555', 'Active'),
-('FAC006', 'Dr. Jennifer Park', 'jennifer.park@beautex.edu', 'Technology', '["Cyber Security"]', '+254 711 666 666', 'Active');
+INSERT OR IGNORE INTO faculty (id, name, email, department, id_number, courses, contact, status) VALUES
+('FAC001', 'Dr. James Wilson', 'james.wilson@beautex.edu', 'Technology', 'ID123456', '["Computer Packages"]', '+254 711 111 111', 'Active'),
+('FAC002', 'Prof. Sarah Anderson', 'sarah.anderson@beautex.edu', 'Beauty & Personal Care', 'ID234567', '["Cosmetology"]', '+254 711 222 222', 'Active'),
+('FAC003', 'Dr. Emily Davis', 'emily.davis@beautex.edu', 'Beauty & Personal Care', 'ID345678', '["Beauty Therapy"]', '+254 711 333 333', 'Active'),
+('FAC004', 'Chef Michael Brown', 'michael.brown@beautex.edu', 'Hospitality', 'ID456789', '["Catering"]', '+254 711 444 444', 'Active'),
+('FAC005', 'Prof. David Chen', 'david.chen@beautex.edu', 'Technology', 'ID567890', '["Website Development"]', '+254 711 555 555', 'Active'),
+('FAC006', 'Dr. Jennifer Park', 'jennifer.park@beautex.edu', 'Technology', 'ID678901', '["Cyber Security"]', '+254 711 666 666', 'Active');
 
 -- Insert demo announcements
 INSERT OR IGNORE INTO announcements (title, content, author, category, priority, date) VALUES
-('Spring Semester Orientation', 'All new students must attend the orientation on February 15, 2026 at 9:00 AM.', 'Admin User', 'General', 'High', '2026-02-05'),
-('Course Registration Deadline', 'Reminder: Course registration for the upcoming semester closes on February 20, 2026.', 'Admin User', 'Academic', 'Medium', '2026-02-06'),
+('January Intake Orientation', 'All new students must attend the orientation on February 15, 2026 at 9:00 AM.', 'Admin User', 'General', 'High', '2026-02-05'),
+('Intake Registration Deadline', 'Reminder: Registration for the upcoming intake closes on February 20, 2026.', 'Admin User', 'Academic', 'Medium', '2026-02-06'),
 ('Library Hours Extended', 'The library will now be open until 10:00 PM on weekdays starting next week.', 'Admin User', 'Facilities', 'Low', '2026-02-07');
 -- Sessions (Schedule) table
 CREATE TABLE IF NOT EXISTS sessions (
@@ -325,7 +325,7 @@ INSERT OR IGNORE INTO system_settings (key, value) VALUES
 ('college_name', 'Beautex Technical Training College'),
 ('college_abbr', 'BTC'),
 ('academic_year', '2025/2026'),
-('semester', 'Semester 1'),
+('intake', 'January Intake'),
 ('contact_email', 'admin@beautex.edu'),
 ('maintenance_mode', 'false'),
 ('student_portal_enabled', 'true'),

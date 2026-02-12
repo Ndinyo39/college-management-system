@@ -9,8 +9,8 @@ const __dirname = path.dirname(__filename);
 
 const getDbConfig = () => ({
     dbPath: process.env.DB_PATH || path.join(__dirname, '../../database.sqlite'),
-    DATABASE_URL: process.env.DATABASE_URL,
-    MONGODB_URI: process.env.MONGODB_URI
+    DATABASE_URL: process.env.DATABASE_URL ? process.env.DATABASE_URL.trim() : undefined,
+    MONGODB_URI: process.env.MONGODB_URI ? process.env.MONGODB_URI.trim() : undefined
 });
 
 const { Pool } = pg;
@@ -43,7 +43,7 @@ export async function getDb() {
         if (!pgPool) {
             const { default: pg } = await import('pg'); // Dynamically import pg
             pgPool = new pg.Pool({
-                connectionString: config.DATABASE_URL, // Corrected from dbConfig to config
+                connectionString: config.DATABASE_URL,
                 ssl: { rejectUnauthorized: false }
             });
             pgPool.on('error', (err) => {
@@ -117,6 +117,7 @@ export async function initializeDatabase() {
                     !errMsg.includes('duplicate key') &&
                     !errMsg.includes('already been assigned')) {
                     console.warn(`⚠️ Postgres Init Warning: ${err.message}`);
+                    console.error('Full Postgres Error:', err);
                     console.warn(`Statement prefix: ${statement.trim().substring(0, 50)}...`);
                 }
             }
@@ -158,10 +159,7 @@ export async function queryOne(sql, params = []) {
     const config = getDbConfig();
     if (config.DATABASE_URL) {
         let paramCount = 0;
-        const pgSql = sql.replace(/\?/g, () => {
-            paramCount++;
-            return `$${paramCount}`;
-        });
+        const pgSql = sql.replace(/\?/g, () => `$${++paramCount}`);
         const result = await database.query(pgSql, params);
         return result.rows[0];
     }
@@ -172,17 +170,14 @@ export async function run(sql, params = []) {
     const database = await getDb();
     const config = getDbConfig();
     if (config.DATABASE_URL) {
-        let pgSql = sql.replace(/\?/g, (_, i, s) => {
-            // Very basic param counting
-            const count = (s.slice(0, i).match(/\?/g) || []).length + 1;
-            return `$${count}`;
-        });
+        let paramCount = 0;
+        let pgSql = sql.replace(/\?/g, () => `$${++paramCount}`);
 
         // Dialect translation for common seed/crud patterns
         pgSql = pgSql.replace(/INSERT OR IGNORE INTO/gi, 'INSERT INTO');
 
-        // Append ON CONFLICT only for INSERT statements
-        if (pgSql.trim().toUpperCase().startsWith('INSERT')) {
+        // Append ON CONFLICT only for INSERT statements IF NOT ALREADY PRESENT
+        if (pgSql.trim().toUpperCase().startsWith('INSERT') && !pgSql.toLowerCase().includes('on conflict')) {
             const lowerPgSql = pgSql.toLowerCase();
             if (lowerPgSql.includes('insert into users')) {
                 pgSql += ' ON CONFLICT (email) DO NOTHING';

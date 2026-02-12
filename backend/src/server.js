@@ -34,6 +34,9 @@ if (process.env.FRONTEND_URL) {
     }
 }
 
+// Always allow Vercel domains in production for this test deployment
+allowedOrigins.push('vercel.app');
+
 app.use(cors({
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
@@ -45,7 +48,12 @@ app.use(cors({
         }
 
         // If in production, check against allowedOrigins
-        if (allowedOrigins.some(o => origin.startsWith(o))) {
+        const isAllowed = allowedOrigins.some(o => {
+            if (o === 'vercel.app') return origin.endsWith('.vercel.app');
+            return origin.startsWith(o);
+        });
+
+        if (isAllowed) {
             callback(null, true);
         } else {
             console.warn(`Blocked by CORS: ${origin}`);
@@ -74,52 +82,6 @@ initDb();
 // API Routes
 app.use('/api', apiRoutes);
 
-// Database check route for debugging
-app.get('/api/db-check', async (req, res) => {
-    try {
-        const db = await getDb();
-
-        // MongoDB Check
-        if (process.env.MONGODB_URI) {
-            const User = (await import('./models/mongo/User.js')).default;
-            const userCount = await User.countDocuments();
-            return res.json({
-                status: '✅ Connected to MongoDB Atlas',
-                database: 'MongoDB',
-                users: userCount,
-                message: 'MongoDB is active.'
-            });
-        }
-
-        // Supabase/Postgres Check
-        if (process.env.DATABASE_URL) {
-            const result = await db.query('SELECT COUNT(*) as count FROM users');
-            return res.json({
-                status: '✅ Connected to Supabase (PostgreSQL)',
-                database: 'PostgreSQL',
-                users: parseInt(result.rows[0].count),
-                message: 'Supabase is active.'
-            });
-        }
-
-        // SQLite Check
-        const userCount = await db.get('SELECT COUNT(*) as count FROM users');
-        res.json({
-            status: '✅ Connected to local SQLite',
-            database: 'SQLite',
-            users: userCount.count,
-            message: 'SQLite is active. Vercel deployments require MongoDB or a cloud database.'
-        });
-
-    } catch (error) {
-        console.error('❌ Database Check Failed:', error);
-        res.status(500).json({
-            status: '❌ Database Connection Failed',
-            error: error.message,
-            stack: process.env.NODE_ENV === 'production' ? null : error.stack
-        });
-    }
-});
 
 // Root route
 app.get('/', (req, res) => {

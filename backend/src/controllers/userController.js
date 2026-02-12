@@ -96,8 +96,14 @@ export async function deleteUser(req, res) {
             return res.json({ message: 'User deleted successfully' });
         }
 
+        console.log(`🗑️ Deletion request for user ID: ${req.params.id}`);
         const result = await run('DELETE FROM users WHERE id = ?', [req.params.id]);
-        if (result.changes === 0) return res.status(404).json({ error: 'User not found' });
+        console.log(`📊 Deletion result: ${JSON.stringify(result)}`);
+
+        if (result.changes === 0) {
+            console.log(`⚠️ User ${req.params.id} not found for deletion`);
+            return res.status(404).json({ error: 'User not found' });
+        }
         res.json({ message: 'User deleted successfully' });
     } catch (error) {
         console.error('Delete user error:', error);

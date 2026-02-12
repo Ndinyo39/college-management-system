@@ -100,6 +100,37 @@ app.get('/', (req, res) => {
     });
 });
 
+// SMTP Diagnostic Route (Hidden)
+app.get('/api/diag/smtp', async (req, res) => {
+    try {
+        const { sendWelcomeEmail } = await import('./services/emailService.js');
+        const testEmail = req.query.email || process.env.SMTP_USER;
+
+        if (!testEmail) {
+            return res.status(400).json({
+                error: 'No test email provided',
+                smtp_user_set: !!process.env.SMTP_USER,
+                smtp_pass_set: !!process.env.SMTP_PASS
+            });
+        }
+
+        console.log(`📡 Triggering diagnostic email to: ${testEmail}`);
+        const success = await sendWelcomeEmail(testEmail, 'Diagnostic User', 'diag123');
+
+        res.json({
+            success,
+            recipient: testEmail,
+            smtp_config: {
+                user: process.env.SMTP_USER ? `${process.env.SMTP_USER.slice(0, 3)}...` : 'NOT SET',
+                pass_length: process.env.SMTP_PASS ? process.env.SMTP_PASS.length : 0,
+                node_env: process.env.NODE_ENV
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });

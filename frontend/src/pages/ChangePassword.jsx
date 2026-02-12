@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import { authAPI } from '../services/api';
 import { Lock, Save } from 'lucide-react';
 
 export default function ChangePassword() {
@@ -42,8 +42,7 @@ export default function ChangePassword() {
         setLoading(true);
 
         try {
-            // Using the new endpoint we created
-            const response = await axios.post('http://localhost:5001/api/auth/change-password', {
+            await authAPI.changePassword({
                 email,
                 newPassword
             });

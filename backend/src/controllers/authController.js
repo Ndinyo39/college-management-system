@@ -35,13 +35,13 @@ export async function createUser(email, hashedPassword, role) {
 
     if (db.constructor.name === 'NativeConnection') {
         const User = (await import('../models/mongo/User.js')).default;
-        const newUser = new User({ email, password: hashedPassword, role });
+        const newUser = new User({ email, password: hashedPassword, role, must_change_password: true });
         return await newUser.save();
     }
 
     const result = await run(
-        'INSERT INTO users (email, password, role, status) VALUES (?, ?, ?, ?)',
-        [email, hashedPassword, role, 'Active']
+        'INSERT INTO users (email, password, role, status, must_change_password) VALUES (?, ?, ?, ?, ?)',
+        [email, hashedPassword, role, 'Active', 1]
     );
 
     // For Postgres/Supabase compatibility, we need to fetch the user if lastID is null

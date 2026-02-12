@@ -47,17 +47,37 @@ export const sendWelcomeEmail = async (email, role, tempPassword) => {
             to: email,
             subject: 'Welcome to Beautex Technical Training College - Your Login Credentials',
             html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #4a154b;">Welcome to Beautex Technical Training College</h2>
-                    <p>Hello,</p>
-                    <p>Your account has been created successfully. You can now access the ${role} portal.</p>
-                    <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <p style="margin: 0;"><strong>Email:</strong> ${email}</p>
-                        <p style="margin: 10px 0 0;"><strong>Temporary Password:</strong> ${tempPassword}</p>
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background-color: #ffffff; color: #1a202c;">
+                    <div style="background-color: #800000; padding: 40px 20px; text-align: center;">
+                        <h1 style="color: #ffffff; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px;">Beautex Technical Training College</h1>
+                        <p style="color: #ffd700; margin: 10px 0 0; font-size: 14px; font-weight: bold; letter-spacing: 1px;">ACADEMIC REGISTRY</p>
                     </div>
-                    <p>Please log in and change your password immediately.</p>
-                    <a href="${loginUrl}" style="display: inline-block; background-color: #4a154b; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Login to Portal</a>
-                    <p style="margin-top: 20px; font-size: 12px; color: #666;">If you didn't request this account, please ignore this email.</p>
+                    
+                    <div style="padding: 40px;">
+                        <h2 style="color: #800000; margin-top: 0; font-size: 20px;">Welcome to the College!</h2>
+                        <p style="line-height: 1.6; color: #4a5568;">Dear member, your academic account has been successfully provisioned. You now have full access to the <strong>${role.toUpperCase()} Portal</strong>.</p>
+                        
+                        <div style="background-color: #fff9f0; border: 1px border-left: 4px solid #800000; padding: 25px; border-radius: 8px; margin: 30px 0;">
+                            <p style="margin: 0 0 15px 0; font-size: 13px; color: #800000; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Your Secure Login Credentials</p>
+                            <p style="margin: 0; font-size: 15px;"><strong>Official Email:</strong> <span style="color: #2d3748;">${email}</span></p>
+                            <p style="margin: 10px 0 0; font-size: 15px;"><strong>Temporary Password:</strong> <span style="background-color: #800000; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-family: monospace;">${tempPassword}</span></p>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 40px 0;">
+                            <a href="${loginUrl}" style="background-color: #800000; color: #ffffff; padding: 15px 35px; text-decoration: none; border-radius: 12px; font-weight: bold; display: inline-block; box-shadow: 0 4px 6px rgba(128, 0, 0, 0.2);">Login to Your Portal</a>
+                        </div>
+                        
+                        <div style="border-top: 1px solid #edf2f7; padding-top: 25px; margin-top: 20px;">
+                            <p style="font-size: 13px; color: #718096; line-height: 1.6;">
+                                <strong style="color: #e53e3e;">Important Security Note:</strong> For your protection, you will be required to change this temporary password during your first login. Please choose a strong, unique password.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #edf2f7;">
+                        <p style="margin: 0; font-size: 12px; color: #a0aec0;">&copy; 2026 Beautex Technical Training College. All rights reserved.</p>
+                        <p style="margin: 5px 0 0; font-size: 11px; color: #cbd5e0;">Excellence in Technical Education</p>
+                    </div>
                 </div>
             `,
         });

@@ -1,4 +1,4 @@
-# Beautex College Management System
+# Beautex Technical Training College Management System
 
 A premium, fullstack management system for Beautex Elite Technical College.
 

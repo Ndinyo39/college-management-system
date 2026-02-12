@@ -322,7 +322,7 @@ CREATE TABLE IF NOT EXISTS system_settings (
 
 -- Insert default settings
 INSERT OR IGNORE INTO system_settings (key, value) VALUES 
-('college_name', 'Beautex Technical College'),
+('college_name', 'Beautex Technical Training College'),
 ('college_abbr', 'BTC'),
 ('academic_year', '2025/2026'),
 ('semester', 'Semester 1'),

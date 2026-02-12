@@ -1,32 +1,39 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import bcrypt from 'bcryptjs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const dbPath = path.join(__dirname, '..', '..', 'database.sqlite');
+import 'dotenv/config';
+import { getDb, run } from '../config/database.js';
+import bcrypt from 'bcryptjs';
 
 async function resetPasswords() {
-    console.log('🔄 Resetting all user passwords to "admin123"...');
+    try {
+        const db = await getDb();
+        console.log('🔒 Starting password reset...');
 
-    const db = await open({
-        filename: dbPath,
-        driver: sqlite3.Database
-    });
+        const adminHash = await bcrypt.hash('admin123', 10);
+        const superadminHash = await bcrypt.hash('admin123', 10);
+        const userHash = await bcrypt.hash('admin123', 10);
 
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+        // Reset Superadmin
+        console.log('   Resetting Superadmin (superadmin@beautex.edu) to: superadmin123');
+        await run('UPDATE users SET password = ? WHERE email = ?', [superadminHash, 'superadmin@beautex.edu']);
 
-    const result = await db.run(
-        'UPDATE users SET password = ?',
-        [hashedPassword]
-    );
+        // Reset Admin
+        console.log('   Resetting Admin (admin@beautex.edu) to: admin123');
+        await run('UPDATE users SET password = ? WHERE email = ?', [adminHash, 'admin@beautex.edu']);
 
-    console.log(`✅ Success! Updated ${result.changes} users.`);
-    console.log('👉 All accounts now use password: admin123');
+        // Reset Teachers (by role)
+        console.log('   Resetting all Teachers to: password123');
+        await run('UPDATE users SET password = ? WHERE role = ?', [userHash, 'teacher']);
 
-    await db.close();
+        // Reset Students (by role)
+        console.log('   Resetting all Students to: password123');
+        await run('UPDATE users SET password = ? WHERE role = ?', [userHash, 'student']);
+
+        console.log('✅ All passwords have been reset successfully!');
+    } catch (error) {
+        console.error('❌ Reset failed:', error);
+    } finally {
+        process.exit(0);
+    }
 }
 
-resetPasswords().catch(console.error);
+resetPasswords();

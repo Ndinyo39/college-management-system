@@ -67,7 +67,7 @@ export default function Announcements() {
         if (!window.confirm('Are you sure you want to delete this announcement?')) return;
         try {
             await announcementsAPI.delete(rawId);
-            setAnnouncements(announcements.filter(ann => (ann.id || ann._id) !== rawId));
+            setAnnouncements(announcements.filter(ann => (ann.id || ann._id) != rawId));
         } catch (error) {
             console.error('Error deleting announcement:', error);
         }

@@ -137,6 +137,65 @@ app.get('/api/diag/smtp', async (req, res) => {
     }
 });
 
+// Database Seed Route (One-time use for production)
+app.get('/api/diag/seed', async (req, res) => {
+    try {
+        const bcrypt = (await import('bcryptjs')).default;
+        const { run, query } = await import('./config/database.js');
+
+        // Check if users already exist
+        const existingUsers = await query('SELECT COUNT(*) as count FROM users');
+        if (existingUsers[0].count > 0) {
+            return res.json({
+                message: 'Database already seeded',
+                userCount: existingUsers[0].count
+            });
+        }
+
+        // Seed default users
+        const users = [
+            { email: 'superadmin@beautex.edu', password: 'superadmin123', role: 'superadmin' },
+            { email: 'admin@beautex.edu', password: 'admin123', role: 'admin' }
+        ];
+
+        for (const user of users) {
+            const hashedPassword = await bcrypt.hash(user.password, 10);
+            await run(
+                'INSERT INTO users (email, password, role, status, must_change_password) VALUES (?, ?, ?, ?, ?)',
+                [user.email, hashedPassword, user.role, 'Active', false]
+            );
+        }
+
+        // Seed system settings
+        const defaultSettings = [
+            ['college_name', 'Beautex Technical College'],
+            ['college_abbr', 'BTC'],
+            ['academic_year', '2025/2026'],
+            ['semester', 'Semester 1'],
+            ['contact_email', 'admin@beautex.edu'],
+            ['maintenance_mode', 'false'],
+            ['student_portal_enabled', 'true'],
+            ['teacher_portal_enabled', 'true'],
+            ['parent_portal_enabled', 'true'],
+            ['allow_registration', 'true'],
+            ['grading_system', 'standard']
+        ];
+
+        for (const [key, value] of defaultSettings) {
+            await run('INSERT INTO system_settings (key, value) VALUES (?, ?)', [key, value]);
+        }
+
+        res.json({
+            success: true,
+            message: 'Database seeded successfully',
+            users: users.map(u => ({ email: u.email, role: u.role }))
+        });
+    } catch (err) {
+        console.error('Seed error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });

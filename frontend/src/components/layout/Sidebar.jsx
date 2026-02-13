@@ -99,7 +99,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                             {(user?.email?.[0] || 'U').toUpperCase()}
                         </div>
                         <div className="overflow-hidden">
-                            <p className="text-xs font-bold text-gray-800 truncate">{user?.email?.split('@')[0] || 'User'}</p>
+                            <p className="text-xs font-bold text-gray-800 truncate">{user?.name || user?.email?.split('@')[0] || 'User'}</p>
                             <p className="text-[10px] text-gray-400 truncate uppercase tracking-widest font-black">{user?.role}</p>
                         </div>
                     </div>

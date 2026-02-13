@@ -1,6 +1,7 @@
 -- Users table for authentication
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
   email TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
   role TEXT NOT NULL CHECK(role IN ('superadmin', 'admin', 'teacher', 'student')),

@@ -26,22 +26,22 @@ async function findUserById(id) {
         return await User.findById(id).select('-password');
     }
 
-    const user = await queryOne('SELECT id, email, role, status FROM users WHERE id = ?', [id]);
+    const user = await queryOne('SELECT id, email, role, status, name FROM users WHERE id = ?', [id]);
     return user;
 }
 
-export async function createUser(email, hashedPassword, role) {
+export async function createUser(email, hashedPassword, role, name) {
     const db = await getDb();
 
     if (db.constructor.name === 'NativeConnection') {
         const User = (await import('../models/mongo/User.js')).default;
-        const newUser = new User({ email, password: hashedPassword, role, must_change_password: true });
+        const newUser = new User({ email, password: hashedPassword, role, name, must_change_password: true });
         return await newUser.save();
     }
 
     const result = await run(
-        'INSERT INTO users (email, password, role, status, must_change_password) VALUES (?, ?, ?, ?, ?)',
-        [email, hashedPassword, role, 'Active', 1]
+        'INSERT INTO users (email, password, role, status, must_change_password, name) VALUES (?, ?, ?, ?, ?, ?)',
+        [email, hashedPassword, role, 'Active', 1, name]
     );
 
     // For Postgres/Supabase compatibility, we need to fetch the user if lastID is null
@@ -51,12 +51,12 @@ export async function createUser(email, hashedPassword, role) {
         if (newUser) userId = newUser.id;
     }
 
-    return { id: userId, email, role };
+    return { id: userId, email, role, name };
 }
 
 export async function register(req, res) {
     try {
-        const { email, password, role } = req.body;
+        const { email, password, role, name } = req.body;
 
         // Validate input
         if (!email || !password || !role) {
@@ -73,7 +73,7 @@ export async function register(req, res) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create user
-        const savedUser = await createUser(email, hashedPassword, role);
+        const savedUser = await createUser(email, hashedPassword, role, name);
 
         res.status(201).json({
             message: 'User registered successfully',
@@ -167,7 +167,13 @@ export async function login(req, res) {
         // Generate JWT
         const userId = user._id || user.id;
         const token = jwt.sign(
-            { id: userId, email: user.email, role: user.role, status: user.status },
+            {
+                id: userId,
+                email: user.email,
+                role: user.role,
+                status: user.status,
+                name: user.name || user.email.split('@')[0]
+            },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
@@ -176,6 +182,7 @@ export async function login(req, res) {
             token,
             user: {
                 id: userId,
+                name: user.name || user.email.split('@')[0],
                 email: user.email,
                 role: user.role,
                 status: user.status

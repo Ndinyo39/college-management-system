@@ -78,7 +78,7 @@ export default function Announcements() {
         try {
             const announcementData = {
                 ...formData,
-                author: user?.email || 'Admin'
+                author: user?.name || user?.email || 'Admin'
             };
             if (editingAnnouncement) {
                 await announcementsAPI.update(editingAnnouncement.id, announcementData);

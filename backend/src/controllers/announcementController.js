@@ -34,9 +34,9 @@ export async function createAnnouncement(req, res) {
 
         await run(
             'INSERT INTO announcements (title, content, author, category, priority, date) VALUES (?, ?, ?, ?, ?, ?)',
-            [title, content, author, category, priority, date || new Date().toISOString().split('T')[0]]
+            [title, content, author || req.user.name || req.user.email.split('@')[0], category, priority, date || new Date().toISOString().split('T')[0]]
         );
-        const announcement = await queryOne('SELECT * FROM announcements WHERE title = ? AND author = ? ORDER BY date DESC LIMIT 1', [title, author]);
+        const announcement = await queryOne('SELECT * FROM announcements WHERE title = ? ORDER BY date DESC LIMIT 1', [title]);
         res.status(201).json(announcement);
     } catch (error) {
         console.error('Create announcement error:', error);

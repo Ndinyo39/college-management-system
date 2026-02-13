@@ -53,7 +53,7 @@ function App() {
                         <Route path="/announcements" element={<ProtectedRoute allowedRoles={['admin', 'teacher', 'student', 'superadmin']}><Layout><Announcements /></Layout></ProtectedRoute>} />
                         <Route path="/settings" element={<ProtectedRoute allowedRoles={['admin', 'superadmin']}><Layout><Settings /></Layout></ProtectedRoute>} />
                         <Route path="/users" element={<ProtectedRoute allowedRoles={['superadmin']}><Layout><Users /></Layout></ProtectedRoute>} />
-                        <Route path="/reports" element={<ProtectedRoute allowedRoles={['teacher', 'admin', 'superadmin']}><Layout><AcademicReports /></Layout></ProtectedRoute>} />
+                        <Route path="/reports" element={<ProtectedRoute allowedRoles={['teacher', 'admin', 'superadmin', 'student']}><Layout><AcademicReports /></Layout></ProtectedRoute>} />
                         <Route path="/activity-reports" element={<ProtectedRoute allowedRoles={['admin', 'superadmin']}><Layout><ActivityReports /></Layout></ProtectedRoute>} />
 
                         <Route path="/" element={<Navigate to="/login" />} />

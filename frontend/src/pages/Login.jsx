@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, GraduationCap } from 'lucide-react';
+import { LogIn, GraduationCap, Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
@@ -118,14 +119,23 @@ export default function Login() {
 
                         <div className="space-y-2">
                             <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-5 py-4 rounded-xl bg-gray-50 border border-gray-100 text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-maroon/5 focus:border-maroon/20 font-medium transition-all"
-                                placeholder="Enter password"
-                                required
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-5 py-4 rounded-xl bg-gray-50 border border-gray-100 text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-maroon/5 focus:border-maroon/20 font-medium transition-all pr-12"
+                                    placeholder="Enter password"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-maroon transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex items-center justify-between px-1">

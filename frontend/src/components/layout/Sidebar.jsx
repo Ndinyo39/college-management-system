@@ -24,7 +24,7 @@ const navigation = [
     { name: 'Attendance', path: '/attendance', icon: ClipboardList, roles: ['admin', 'teacher', 'student', 'superadmin'] },
     { name: 'Grades', path: '/grades', icon: GraduationCap, roles: ['admin', 'teacher', 'student', 'superadmin'] },
     { name: 'Schedule', path: '/schedule', icon: Calendar, roles: ['admin', 'teacher', 'student', 'superadmin'] },
-    { name: 'Academic Reports', path: '/reports', icon: FileText, roles: ['admin', 'teacher', 'superadmin'] },
+    { name: 'Academic Reports', path: '/reports', icon: FileText, roles: ['admin', 'teacher', 'superadmin', 'student'] },
     { name: 'Activity Reports', path: '/activity-reports', icon: BarChart3, roles: ['admin', 'superadmin'] },
     { name: 'Announcements', path: '/announcements', icon: Megaphone, roles: ['admin', 'teacher', 'student', 'superadmin'] },
     { name: 'Settings', path: '/settings', icon: SettingsIcon, roles: ['admin', 'superadmin'] },

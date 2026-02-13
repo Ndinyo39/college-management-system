@@ -24,6 +24,20 @@ export const getAllReports = async (req, res) => {
         if (trainer_email) {
             sql += ' WHERE trainer_email = ?';
             params.push(trainer_email);
+        } else if (req.user.role === 'student') {
+            // Find student record linked to this user's email
+            // We need to support both Mongo and SQL here ideally, but for now let's stick to the SQL path since we are in the SQL block.
+            // (The Mongo block returns early above).
+
+            const student = await queryOne('SELECT id FROM students WHERE email = ?', [req.user.email]);
+
+            if (student) {
+                sql += ' WHERE student_id = ?';
+                params.push(student.id);
+            } else {
+                // If no linked student record found, return empty
+                return res.json([]);
+            }
         } else if (course) {
             sql += ' WHERE course_unit = ?';
             params.push(course);

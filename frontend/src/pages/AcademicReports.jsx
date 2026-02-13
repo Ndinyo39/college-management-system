@@ -57,12 +57,17 @@ export default function AcademicReports() {
             const params = {};
             if (user?.role === 'teacher') params.trainer_email = user.email;
 
-            const [reportsRes, studentsRes] = await Promise.all([
-                reportsAPI.getAll(params),
-                studentsAPI.getAll()
-            ]);
+            const promises = [reportsAPI.getAll(params)];
+            // Only fetch student list if not a student or if needed for filter
+            if (user?.role !== 'student') {
+                promises.push(studentsAPI.getAll());
+            }
+
+            const [reportsRes, studentsRes] = await Promise.all(promises);
             setReports(reportsRes.data);
-            setStudents(studentsRes.data);
+            if (studentsRes) {
+                setStudents(studentsRes.data);
+            }
 
             // Handle URL filter
             const queryParams = new URLSearchParams(location.search);
@@ -181,20 +186,22 @@ export default function AcademicReports() {
                 </div>
             </div>
 
-            {/* Filter Bar */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                    <select
-                        value={filterStudentId}
-                        onChange={(e) => setFilterStudentId(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-none rounded-xl text-sm font-black text-maroon outline-none appearance-none"
-                    >
-                        <option value="">Filter by Student Registry...</option>
-                        {students.map(s => <option key={s.id} value={s.id}>{s.name} ({s.id})</option>)}
-                    </select>
+            {/* Filter Bar - Hide for students */}
+            {user?.role !== 'student' && (
+                <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    <div className="flex-1 relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                        <select
+                            value={filterStudentId}
+                            onChange={(e) => setFilterStudentId(e.target.value)}
+                            className="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-none rounded-xl text-sm font-black text-maroon outline-none appearance-none"
+                        >
+                            <option value="">Filter by Student Registry...</option>
+                            {students.map(s => <option key={s.id} value={s.id}>{s.name} ({s.id})</option>)}
+                        </select>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Reports List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">

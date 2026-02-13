@@ -3,6 +3,12 @@ import { Megaphone, Plus, Calendar, User, Tag, Trash2, X, Edit } from 'lucide-re
 import { announcementsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
+const priorityColors = {
+    High: 'text-red-500',
+    Medium: 'text-blue-500',
+    Low: 'text-green-500'
+};
+
 export default function Announcements() {
     const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -12,7 +18,7 @@ export default function Announcements() {
         title: '',
         content: '',
         category: 'General',
-        priority: 'Normal',
+        priority: 'Medium',
         date: new Date().toISOString().split('T')[0],
     });
 
@@ -39,7 +45,7 @@ export default function Announcements() {
             title: '',
             content: '',
             category: 'General',
-            priority: 'Normal',
+            priority: 'Medium',
             date: new Date().toISOString().split('T')[0],
         });
         setEditingAnnouncement(null);
@@ -188,7 +194,7 @@ export default function Announcements() {
                                         onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                                         className="w-full px-6 py-5 bg-white/5 border border-white/10 rounded-2xl text-white font-bold outline-none focus:ring-1 focus:ring-gold/30 transition-all"
                                     >
-                                        <option value="Normal">Normal</option>
+                                        <option value="Medium">Normal</option>
                                         <option value="High">High Priority</option>
                                     </select>
                                 </div>

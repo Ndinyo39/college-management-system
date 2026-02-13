@@ -35,7 +35,7 @@ export default function Navbar({ onMenuClick }) {
     const unreadCount = safeNotifications.filter(n => !n.read).length;
 
     return (
-        <div className="h-20 bg-primary px-4 md:px-8 flex items-center justify-between fixed top-0 right-0 left-0 lg:left-64 z-50 shadow-2xl transition-all duration-300">
+        <div className="h-20 bg-primary px-4 md:px-8 flex items-center justify-between sticky top-0 left-0 w-full z-40 shadow-2xl transition-all duration-300">
             <div className="flex items-center gap-4">
                 <button
                     onClick={onMenuClick}

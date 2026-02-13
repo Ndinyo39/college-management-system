@@ -28,11 +28,11 @@ export default function Layout({ children }) {
             <div className="print:hidden">
                 <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
             </div>
-            <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-0' : 'ml-0 lg:ml-64'} relative min-h-screen flex flex-col print:ml-0`}>
+            <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-0' : 'ml-0'} lg:ml-64 relative min-h-screen flex flex-col print:ml-0`}>
                 <div className="print:hidden">
                     <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
                 </div>
-                <main className="flex-1 p-4 md:p-10 pt-28 print:p-0 print:pt-4 overflow-x-hidden">
+                <main className="flex-1 p-4 md:p-10 relative z-0 print:p-0 print:pt-4 overflow-x-hidden">
                     {children}
                 </main>
             </div>

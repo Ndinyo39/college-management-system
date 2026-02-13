@@ -116,7 +116,7 @@ export default function Announcements() {
                 {announcements.map((announcement) => {
                     const announcementId = announcement.id || announcement._id;
                     return (
-                        <div key={announcementId} className="group bg-maroon-800/10 backdrop-blur-xl rounded-3xl p-5 md:p-8 border border-white/5 hover:border-white/10 transition-all hover:scale-[1.01] flex flex-col justify-between">
+                        <div key={announcementId} className="group bg-maroon backdrop-blur-xl rounded-3xl p-5 md:p-8 border border-white/5 hover:border-white/10 transition-all hover:scale-[1.01] flex flex-col justify-between">
                             <div>
                                 <div className="flex justify-between items-start mb-4 md:mb-6">
                                     <div className="flex gap-2">

@@ -17,16 +17,10 @@ async function seed() {
             await initializeDatabase();
         }
 
-        // 2. Demo Users
+        // Demo Users
         const users = [
-            { email: 'admin@beautex.edu', password: 'admin123', role: 'admin' },
-            { email: 'superadmin@beautex.edu', password: 'superadmin123', role: 'superadmin' },
-            // Sample Students
-            { email: 'sarah.johnson@beautex.edu', password: 'password123', role: 'student' },
-            { email: 'michael.chen@beautex.edu', password: 'password123', role: 'student' },
-            // Sample Teachers
-            { email: 'james.wilson@beautex.edu', password: 'password123', role: 'teacher' },
-            { email: 'sarah.anderson@beautex.edu', password: 'password123', role: 'teacher' }
+            { email: 'beautexcollege01@gmail.com', password: 'Beautex@2026', role: 'superadmin' },
+            { email: 'admin@beautex.edu', password: 'Beautex@2026', role: 'admin' }
         ];
 
         for (const user of users) {

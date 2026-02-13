@@ -154,8 +154,8 @@ app.get('/api/diag/seed', async (req, res) => {
 
         // Seed default users
         const users = [
-            { email: 'superadmin@beautex.edu', password: 'superadmin123', role: 'superadmin' },
-            { email: 'admin@beautex.edu', password: 'admin123', role: 'admin' }
+            { email: 'beautexcollege01@gmail.com', password: 'Beautex@2026', role: 'superadmin' },
+            { email: 'admin@beautex.edu', password: 'Beautex@2026', role: 'admin' }
         ];
 
         for (const user of users) {

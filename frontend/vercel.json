@@ -12,7 +12,7 @@
     "routes": [
         {
             "src": "/api/(.*)",
-            "dest": "https://college-management-system-u9b7.vercel.app/api/$1"
+            "dest": "https://backend-eta-henna.vercel.app/api/$1"
         },
         {
             "handle": "filesystem"
